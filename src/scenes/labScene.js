@@ -38,19 +38,30 @@ export default class LabScene extends Phaser.Scene {
     const tableHeight = 250;
     
     // miza (del, ki se klikne)
-    const tableTop = this.add.rectangle(tableX, tableY, tableWidth, 30, 0x8b4513).setOrigin(0.5);
+    const tableTop1 = this.add.rectangle(tableX - (width / 4), tableY, tableWidth, 30, 0x8b4513).setOrigin(0.5);
+    const tableTopLogicGates = this.add.rectangle(tableX + (width / 4), tableY, tableWidth, 30, 0x8b4513).setOrigin(0.5);
     
     // delovna površina mize
-    const tableSurface = this.add.rectangle(tableX, tableY + 15, tableWidth - 30, tableHeight - 30, 0xa0826d).setOrigin(0.5, 0);
+    const tableSurface1 = this.add.rectangle(tableX - (width / 4), tableY + 15, tableWidth - 30, tableHeight - 30, 0xa0826d).setOrigin(0.5, 0);
+    const tableSurfaceLogicGates = this.add.rectangle(tableX + (width / 4), tableY + 15, tableWidth - 30, tableHeight - 30, 0xa0826d).setOrigin(0.5, 0);
     
     // mreža
     const gridGraphics = this.add.graphics();
     gridGraphics.lineStyle(1, 0x8b7355, 0.3);
+
+    const gridGraphicsLogicGates = this.add.graphics();
+    gridGraphicsLogicGates.lineStyle(1, 0x8b7355, 0.3);
+
     const gridSize = 30;
-    const gridStartX = tableX - (tableWidth - 30) / 2;
+    const gridStartX = tableX - (width / 4) - (tableWidth - 30) / 2;
     const gridStartY = tableY + 15;
-    const gridEndX = tableX + (tableWidth - 30) / 2;
+    const gridEndX = tableX - (width / 4) + (tableWidth - 30) / 2;
     const gridEndY = tableY + 15 + (tableHeight - 30);
+
+    const gridStartXLogicGates = tableX + (width / 4) - (tableWidth - 30) / 2;
+    const gridStartYLogicGates = tableY + 15;
+    const gridEndXLogicGates = tableX + (width / 4) + (tableWidth - 30) / 2;
+    const gridEndYLogicGates = tableY + 15 + (tableHeight - 30);
     
     for (let x = gridStartX; x <= gridEndX; x += gridSize) {
       gridGraphics.beginPath();
@@ -64,18 +75,45 @@ export default class LabScene extends Phaser.Scene {
       gridGraphics.lineTo(gridEndX, y);
       gridGraphics.strokePath();
     }
+
+    for (let x = gridStartXLogicGates; x <= gridEndXLogicGates; x += gridSize) {
+      gridGraphicsLogicGates.beginPath();
+      gridGraphicsLogicGates.moveTo(x, gridStartYLogicGates);
+      gridGraphicsLogicGates.lineTo(x, gridEndYLogicGates);
+      gridGraphicsLogicGates.strokePath();
+    }
+    for (let y = gridStartYLogicGates; y <= gridEndYLogicGates; y += gridSize) {
+      gridGraphicsLogicGates.beginPath();
+      gridGraphicsLogicGates.moveTo(gridStartXLogicGates, y);
+      gridGraphicsLogicGates.lineTo(gridEndXLogicGates, y);
+      gridGraphicsLogicGates.strokePath();
+    }
     
     // nogice mize
     const legWidth = 20;
     const legHeight = 150;
-    this.add.rectangle(tableX - tableWidth/2 + 40, tableY + tableHeight/2 + 20, legWidth, legHeight, 0x654321);
-    this.add.rectangle(tableX + tableWidth/2 - 40, tableY + tableHeight/2 + 20, legWidth, legHeight, 0x654321);
+    this.add.rectangle(tableX - (width / 4) - tableWidth/2 + 40, tableY + tableHeight/2 + 20, legWidth, legHeight, 0x654321);
+    this.add.rectangle(tableX - (width / 4) + tableWidth/2 - 40, tableY + tableHeight/2 + 20, legWidth, legHeight, 0x654321);
+
+    this.add.rectangle(tableX + (width / 4) - tableWidth/2 + 40, tableY + tableHeight/2 + 20, legWidth, legHeight, 0x654321);
+    this.add.rectangle(tableX + (width / 4) + tableWidth/2 - 40, tableY + tableHeight/2 + 20, legWidth, legHeight, 0x654321);
     
     // interaktivnost mize
-    const interactiveZone = this.add.zone(tableX, tableY + tableHeight/2, tableWidth, tableHeight)
+    const interactiveZone1 = this.add.zone(tableX - (width / 4), tableY + tableHeight/2, tableWidth, tableHeight)
+      .setInteractive({ useHandCursor: true });
+
+    const interactiveZoneLogicGates = this.add.zone(tableX + (width / 4), tableY + tableHeight/2, tableWidth, tableHeight)
       .setInteractive({ useHandCursor: true });
     
-    const instruction = this.add.text(tableX, tableY - 80, 'Klikni na mizo in začni graditi svoj električni krog!', {
+    const instruction = this.add.text(tableX - (width / 4), tableY - 80, 'Klikni na mizo in začni graditi svoj električni krog!', {
+      fontSize: '24px',
+      color: '#333',
+      fontStyle: 'bold',
+      backgroundColor: '#ffffff',
+      padding: { x: 20, y: 10 }
+    }).setOrigin(0.5);
+
+    const instructionLogicGates = this.add.text(tableX + (width / 4), tableY - 80, 'Klikni na mizo in začni spoznavati logične funkcije!', {
       fontSize: '24px',
       color: '#333',
       fontStyle: 'bold',
@@ -91,21 +129,45 @@ export default class LabScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1
     });
+
+    this.tweens.add({
+      targets: instructionLogicGates,
+      alpha: 0.5,
+      duration: 1000,
+      yoyo: true,
+      repeat: -1
+    });
     
     // zoom na mizo
-    interactiveZone.on('pointerdown', () => {
+    interactiveZone1.on('pointerdown', () => {
       this.cameras.main.fade(300, 0, 0, 0);
       this.time.delayedCall(300, () => {
         this.scene.start('WorkspaceScene');
       });
     });
     
-    interactiveZone.on('pointerover', () => {
-      tableSurface.setFillStyle(0xb09070);
+    interactiveZone1.on('pointerover', () => {
+      tableSurface1.setFillStyle(0xb09070);
     });
     
-    interactiveZone.on('pointerout', () => {
-      tableSurface.setFillStyle(0xa0826d);
+    interactiveZone1.on('pointerout', () => {
+      tableSurface1.setFillStyle(0xa0826d);
+    });
+
+    interactiveZoneLogicGates.on('pointerdown', () => {
+      this.cameras.main.fade(300, 0, 0, 0);
+      this.time.delayedCall(300, () => {
+        this.scene.start('WorkspaceScene');
+        console.log("Start the logic gates workspace")
+      });
+    });
+    
+    interactiveZoneLogicGates.on('pointerover', () => {
+      tableSurfaceLogicGates.setFillStyle(0xb09070);
+    });
+    
+    interactiveZoneLogicGates.on('pointerout', () => {
+      tableSurfaceLogicGates.setFillStyle(0xa0826d);
     });
 
     const username = localStorage.getItem('username');
