@@ -153,6 +153,10 @@ class LogicCircuit {
         this.gates.set(gate.id, gate);
         return gate;
     }
+
+    connectGates(gate_source_id, gate_destination_id) {
+        this.gates.get(gate_source_id).connectTo(this.gates.get(gate_destination_id));
+    }
     
     getGate(id) {
         return this.gates.get(id);
@@ -194,12 +198,20 @@ const notGate = circuit.addGate(new NotGate('not1'));
 const andGate1 = circuit.addGate(new AndGate('and2'));
 const notGate1 = circuit.addGate(new NotGate('not2'));
 
-input1.connectTo(andGate);
+circuit.connectGates('input1', 'and1');
+circuit.connectGates('input2', 'not1');
+circuit.connectGates('not1', 'and1');
+circuit.connectGates('and1', 'and2');
+circuit.connectGates('input1', 'and2');
+circuit.connectGates('and2', 'not2');
+
+/*input1.connectTo(andGate);
 input2.connectTo(notGate);
 notGate.connectTo(andGate);
 andGate.connectTo(andGate1);
 input1.connectTo(andGate1);
 andGate1.connectTo(notGate1);
+*/
 //notGate1.connectTo(andGate);
 
 console.log('Circuit results:', circuit.evaluate());
