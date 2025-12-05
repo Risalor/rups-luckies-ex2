@@ -14,6 +14,11 @@ class LogicGate {
             inputIndex = gate.inputGates.length;
         }
         
+        if (this.wouldCreateCycle(gate)) {
+            console.log(`Cannot connect ${this.id} to ${gate.id}: Would create a cycle!`);
+            return true;
+        }
+        
         gate.inputGates[inputIndex] = this;
         this.outputGates.push({
             gate: gate,
@@ -21,7 +26,28 @@ class LogicGate {
         });
         
         this.markDownstreamDirty();
-        return this;
+        return false;
+    }
+
+    wouldCreateCycle(targetGate) {
+        const visited = new Set();
+        
+        function hasPathTo(start, target) {
+            if (start === target) return true;
+            if (visited.has(start)) return false;
+            
+            visited.add(start);
+            
+            for (const connection of start.outputGates || []) {
+                if (hasPathTo(connection.gate, target)) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        return hasPathTo(targetGate, this);
     }
 
     disconnectFrom(gate) {
@@ -98,8 +124,8 @@ class LogicGate {
     markDownstreamDirty() {
         if(!this.dirty) {
             this.dirty = true;
-            this.outputGates.forEach(gate => {
-                gate.markDownstreamDirty();
+            this.outputGates.forEach(conn => {
+                conn.gate.markDownstreamDirty();
             });
         }
     }
@@ -154,8 +180,13 @@ class LogicCircuit {
         return gate;
     }
 
+    //Returns false if connection could not be created and true when it was created
     connectGates(gate_source_id, gate_destination_id) {
-        this.gates.get(gate_source_id).connectTo(this.gates.get(gate_destination_id));
+        if(this.gates.get(gate_source_id).connectTo(this.gates.get(gate_destination_id))) {
+            return false;
+        }
+
+        return true;
     }
     
     getGate(id) {
@@ -188,7 +219,6 @@ class LogicCircuit {
     }
 }
 
-//TODO: Implement loop detection and handling
 const circuit = new LogicCircuit();
 
 const input1 = circuit.addGate(new InputGate(true, 'input1'));
@@ -204,6 +234,7 @@ circuit.connectGates('not1', 'and1');
 circuit.connectGates('and1', 'and2');
 circuit.connectGates('input1', 'and2');
 circuit.connectGates('and2', 'not2');
+circuit.connectGates('and2', 'and1');
 
 /*input1.connectTo(andGate);
 input2.connectTo(notGate);
