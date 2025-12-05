@@ -170,17 +170,79 @@ class NotGate extends LogicGate {
     }
 }
 
+class NandGate extends LogicGate {
+    constructor(id = null) {
+        super('NAND', id);
+    }
+}
+
+class NorGate extends LogicGate {
+    constructor(id = null) {
+        super('NOR', id);
+    }
+}
+
+class XorGate extends LogicGate {
+    constructor(id = null) {
+        super('XOR', id);
+    }
+}
+
+class XnorGate extends LogicGate {
+    constructor(id = null) {
+        super('XNOR', id);
+    }
+}
+
+const GateTypes = {
+    input : 'BUFFER',
+    and : 'AND',
+    or : 'OR',
+    not : 'NOT',
+    nand : 'NAND',
+    nor : 'NOR',
+    xor : 'XOR',
+    xnor : 'XNOR'
+};
+
 class LogicCircuit {
     constructor() {
         this.gates = new Map();
     }
-    
-    addGate(gate) {
-        this.gates.set(gate.id, gate);
-        return gate;
+
+    addGate(type, id, value = null) {
+        switch(type) {
+            case GateTypes.input:
+                this.gates.set(id, new InputGate(true, id));
+                return this.gates.get(id);
+            case GateTypes.and:
+                this.gates.set(id, new AndGate(id));
+                return this.gates.get(id);
+            case GateTypes.or:
+                this.gates.set(id, new OrGate(id));
+                return this.gates.get(id);
+            case GateTypes.not:
+                this.gates.set(id, new NotGate(id));
+                return this.gates.get(id);
+            case GateTypes.nand:
+                this.gates.set(id, new NandGate(id));
+                return this.gates.get(id);
+            case GateTypes.nor:
+                this.gates.set(id, new NorGate(id));
+                return this.gates.get(id);
+            case GateTypes.xor:
+                this.gates.set(id, new XorGate(id));
+                return this.gates.get(id);
+            case GateTypes.xnor:
+                this.gates.set(id, new XnorGate(id));
+                return this.gates.get(id);
+            default:
+                console.log("Incorrect gate type provided!");
+                return null;
+        }
     }
 
-    //Returns false if connection could not be created and true when it was created
+    /**Returns false if connection could not be created and true when it was created*/
     connectGates(gate_source_id, gate_destination_id) {
         if(this.gates.get(gate_source_id).connectTo(this.gates.get(gate_destination_id))) {
             return false;
@@ -221,12 +283,12 @@ class LogicCircuit {
 
 const circuit = new LogicCircuit();
 
-const input1 = circuit.addGate(new InputGate(true, 'input1'));
-const input2 = circuit.addGate(new InputGate(false, 'input2'));
-const andGate = circuit.addGate(new AndGate('and1'));
-const notGate = circuit.addGate(new NotGate('not1'));
-const andGate1 = circuit.addGate(new AndGate('and2'));
-const notGate1 = circuit.addGate(new NotGate('not2'));
+const input1 = circuit.addGate(GateTypes.input, 'input1', true);
+const input2 = circuit.addGate(GateTypes.input, 'input2', false);
+const andGate = circuit.addGate(GateTypes.nand, 'and1');
+const notGate = circuit.addGate(GateTypes.not, 'not1');
+const andGate1 = circuit.addGate(GateTypes.and, 'and2');
+const notGate1 = circuit.addGate(GateTypes.not, 'not2');
 
 circuit.connectGates('input1', 'and1');
 circuit.connectGates('input2', 'not1');
@@ -235,14 +297,5 @@ circuit.connectGates('and1', 'and2');
 circuit.connectGates('input1', 'and2');
 circuit.connectGates('and2', 'not2');
 circuit.connectGates('and2', 'and1');
-
-/*input1.connectTo(andGate);
-input2.connectTo(notGate);
-notGate.connectTo(andGate);
-andGate.connectTo(andGate1);
-input1.connectTo(andGate1);
-andGate1.connectTo(notGate1);
-*/
-//notGate1.connectTo(andGate);
 
 console.log('Circuit results:', circuit.evaluate());
