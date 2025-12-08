@@ -17,6 +17,8 @@ export default class LabScene extends Phaser.Scene {
         this.load.image('avatar9', 'src/avatars/avatar9.png');
         this.load.image('avatar10', 'src/avatars/avatar10.png');
         this.load.image('avatar11', 'src/avatars/avatar11.png');
+        this.load.image('LogicGatesIcon', 'src/components/GateIco.png');
+        this.load.image('ElecTecIcon', 'src/components/elec.png');
     }
 
   create() {
@@ -137,6 +139,9 @@ export default class LabScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1
     });
+
+    this.add.image(tableX + (width / 4), tableY + tableHeight/2, 'LogicGatesIcon').setDisplaySize(width/12, height/10);
+    this.add.image(tableX - (width / 4), tableY + tableHeight/2, 'ElecTecIcon').setDisplaySize(width/15, height/7);
     
     // zoom na mizo
     interactiveZone1.on('pointerdown', () => {

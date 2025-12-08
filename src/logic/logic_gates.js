@@ -1,4 +1,4 @@
-class LogicGate {
+export class LogicGate {
     constructor(operation, id = null) {
         this.id = id || `gate_${Math.random().toString(36).substr(2, 9)}`;
         this.operation = operation;
@@ -141,7 +141,7 @@ class LogicGate {
     }
 }
 
-class InputGate extends LogicGate {
+export class InputGate extends LogicGate {
     constructor(value = false, id = null) {
         super('BUFFER', id);
         this.setInputs([value]);
@@ -152,49 +152,49 @@ class InputGate extends LogicGate {
     }
 }
 
-class AndGate extends LogicGate {
+export class AndGate extends LogicGate {
     constructor(id = null) {
         super('AND', id);
     }
 }
 
-class OrGate extends LogicGate {
+export class OrGate extends LogicGate {
     constructor(id = null) {
         super('OR', id);
     }
 }
 
-class NotGate extends LogicGate {
+export class NotGate extends LogicGate {
     constructor(id = null) {
         super('NOT', id);
     }
 }
 
-class NandGate extends LogicGate {
+export class NandGate extends LogicGate {
     constructor(id = null) {
         super('NAND', id);
     }
 }
 
-class NorGate extends LogicGate {
+export class NorGate extends LogicGate {
     constructor(id = null) {
         super('NOR', id);
     }
 }
 
-class XorGate extends LogicGate {
+export class XorGate extends LogicGate {
     constructor(id = null) {
         super('XOR', id);
     }
 }
 
-class XnorGate extends LogicGate {
+export class XnorGate extends LogicGate {
     constructor(id = null) {
         super('XNOR', id);
     }
 }
 
-const GateTypes = {
+export const GateTypes = {
     input : 'BUFFER',
     and : 'AND',
     or : 'OR',
@@ -205,7 +205,7 @@ const GateTypes = {
     xnor : 'XNOR'
 };
 
-class LogicCircuit {
+export class LogicCircuit {
     constructor() {
         this.gates = new Map();
     }
