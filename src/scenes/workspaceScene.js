@@ -20,14 +20,14 @@ export default class WorkspaceScene extends Phaser.Scene {
 
   preload() {
     this.graph = new CircuitGraph();
-    this.load.image('baterija', 'src/components/battery.png');
-    this.load.image('upor', 'src/components/resistor.png');
-    this.load.image('svetilka', 'src/components/lamp.png');
-    this.load.image('stikalo-on', 'src/components/switch-on.png');
-    this.load.image('stikalo-off', 'src/components/switch-off.png');
-    this.load.image('žica', 'src/components/wire.png');
-    this.load.image('ampermeter', 'src/components/ammeter.png');
-    this.load.image('voltmeter', 'src/components/voltmeter.png');
+    this.load.image('baterija', 'src/components/svgs/battery.svg');
+   // this.load.image('upor', 'src/components/resistor.png');
+    this.load.image('svetilka', 'src/components/svgs/bulb.svg');
+    this.load.image('stikalo-on', 'src/components/svgs/switch-on.svg');
+    this.load.image('stikalo-off', 'src/components/svgs/switch-off.svg');
+    this.load.image('žica', 'src/components/svgs/line.svg');
+   // this.load.image('ampermeter', 'src/components/ammeter.png');
+   // this.load.image('voltmeter', 'src/components/voltmeter.png');
   }
 
   create() {
@@ -196,13 +196,13 @@ export default class WorkspaceScene extends Phaser.Scene {
 
     // komponente v stranski vrstici
     this.createComponent(panelWidth / 2, 100, 'baterija', 0xffcc00);
-    this.createComponent(panelWidth / 2, 180, 'upor', 0xff6600);
+    //this.createComponent(panelWidth / 2, 180, 'upor', 0xff6600);
     this.createComponent(panelWidth / 2, 260, 'svetilka', 0xff0000);
     this.createComponent(panelWidth / 2, 340, 'stikalo-on', 0x666666);
     this.createComponent(panelWidth / 2, 420, 'stikalo-off', 0x666666);
     this.createComponent(panelWidth / 2, 500, 'žica', 0x0066cc);
-    this.createComponent(panelWidth / 2, 580, 'ampermeter', 0x00cc66);
-    this.createComponent(panelWidth / 2, 660, 'voltmeter', 0x00cc66);
+   // this.createComponent(panelWidth / 2, 580, 'ampermeter', 0x00cc66);
+   // this.createComponent(panelWidth / 2, 660, 'voltmeter', 0x00cc66);
 
     const backButton = this.add.text(12, 10, '↩ Nazaj', {
       fontFamily: 'Arial',
@@ -271,13 +271,13 @@ export default class WorkspaceScene extends Phaser.Scene {
   getComponentDetails(type) {
     const details = {
         'baterija': 'Napetost: 3.3 V\nVir električne energije',
-        'upor': 'Uporabnost: omejuje tok\nMeri se v ohmih (Ω)',
+        //'upor': 'Uporabnost: omejuje tok\nMeri se v ohmih (Ω)',
         'svetilka': 'Pretvarja električno energijo v svetlobo',
         'stikalo-on': 'Dovoljuje pretok toka',
         'stikalo-off': 'Prepreči pretok toka',
         'žica': 'Povezuje komponente\nKlikni za obračanje',
-        'ampermeter': 'Meri električni tok\nEnota: amperi (A)',
-        'voltmeter': 'Meri električno napetost\nEnota: volti (V)'
+        //'ampermeter': 'Meri električni tok\nEnota: amperi (A)',
+        //'voltmeter': 'Meri električno napetost\nEnota: volti (V)'
     };
     return details[type] || 'Komponenta';
   }
@@ -395,29 +395,10 @@ export default class WorkspaceScene extends Phaser.Scene {
         comp.localEnd = { x: 40, y: 0 };
         componentImage = this.add.image(0, 0, 'baterija')
           .setOrigin(0.5)
-          .setDisplaySize(100, 100);
+          .setDisplaySize(80, 80);
         component.add(componentImage);
         component.setData('logicComponent', comp);
         break;
-
-      case 'upor':
-        id = "res_" + this.getRandomInt(1000, 9999);
-        comp = new Resistor(
-          id,
-          new Node(id + '_start', -40, 0),
-          new Node(id + '_end', 40, 0),
-          1.5
-        )
-        comp.type = 'resistor';
-        comp.localStart = { x: -40, y: 0 };
-        comp.localEnd = { x: 40, y: 0 };
-        componentImage = this.add.image(0, 0, 'upor')
-          .setOrigin(0.5)
-          .setDisplaySize(100, 100);
-        component.add(componentImage);
-        component.setData('logicComponent', comp)
-        break;
-
       case 'svetilka':
         id = "bulb_" + this.getRandomInt(1000, 9999);
         comp = new Bulb(
@@ -430,7 +411,7 @@ export default class WorkspaceScene extends Phaser.Scene {
         comp.localEnd = { x: 40, y: 0 };
         componentImage = this.add.image(0, 0, 'svetilka')
           .setOrigin(0.5)
-          .setDisplaySize(100, 100);
+          .setDisplaySize(80, 80);
         component.add(componentImage);
         component.setData('logicComponent', comp);
         break;
@@ -448,7 +429,7 @@ export default class WorkspaceScene extends Phaser.Scene {
         comp.localEnd = { x: 40, y: 0 };
         componentImage = this.add.image(0, 0, 'stikalo-on')
           .setOrigin(0.5)
-          .setDisplaySize(100, 100);
+          .setDisplaySize(80, 80);
         component.add(componentImage);
         component.setData('logicComponent', comp)
         break;
@@ -466,7 +447,7 @@ export default class WorkspaceScene extends Phaser.Scene {
         comp.localEnd = { x: 40, y: 0 };
         componentImage = this.add.image(0, 0, 'stikalo-off')
           .setOrigin(0.5)
-          .setDisplaySize(100, 100);
+          .setDisplaySize(80, 80);
         component.add(componentImage);
         component.setData('logicComponent', comp)
         break;
@@ -483,15 +464,15 @@ export default class WorkspaceScene extends Phaser.Scene {
         comp.localEnd = { x: 40, y: 0 };
         componentImage = this.add.image(0, 0, 'žica')
           .setOrigin(0.5)
-          .setDisplaySize(100, 100);
+          .setDisplaySize(80, 80);
         component.add(componentImage);
         component.setData('logicComponent', comp);
         break;
-      case 'ampermeter':
+      /*case 'ampermeter':
         id = "ammeter_" + this.getRandomInt(1000, 9999);
         componentImage = this.add.image(0, 0, 'ampermeter')
           .setOrigin(0.5)
-          .setDisplaySize(100, 100);
+          .setDisplaySize(80, 80);
         component.add(componentImage);
         component.setData('logicComponent', null)
         break;
@@ -499,10 +480,28 @@ export default class WorkspaceScene extends Phaser.Scene {
         id = "voltmeter_" + this.getRandomInt(1000, 9999);
         componentImage = this.add.image(0, 0, 'voltmeter')
           .setOrigin(0.5)
-          .setDisplaySize(100, 100);
+          .setDisplaySize(80, 80);
         component.add(componentImage);
         component.setData('logicComponent', null)
         break;
+        case 'upor':
+        id = "res_" + this.getRandomInt(1000, 9999);
+        comp = new Resistor(
+          id,
+          new Node(id + '_start', -40, 0),
+          new Node(id + '_end', 40, 0),
+          1.5
+        )
+        comp.type = 'resistor';
+        comp.localStart = { x: -40, y: 0 };
+        comp.localEnd = { x: 40, y: 0 };
+        componentImage = this.add.image(0, 0, 'upor')
+          .setOrigin(0.5)
+          .setDisplaySize(80, 80);
+        component.add(componentImage);
+        component.setData('logicComponent', comp)
+        break;
+*/
     }
 
     component.on('pointerover', () => {
