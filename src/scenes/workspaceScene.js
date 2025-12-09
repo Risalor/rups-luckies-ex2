@@ -21,7 +21,7 @@ export default class WorkspaceScene extends Phaser.Scene {
   preload() {
     this.graph = new CircuitGraph();
     this.load.image('baterija', 'src/components/svgs/battery.svg');
-   // this.load.image('upor', 'src/components/resistor.png');
+    this.load.image('upor', 'src/components/svgs/resistor.svg');
     this.load.image('svetilka', 'src/components/svgs/bulb.svg');
     this.load.image('stikalo-on', 'src/components/svgs/switch-on.svg');
     this.load.image('stikalo-off', 'src/components/svgs/switch-off.svg');
@@ -31,6 +31,8 @@ export default class WorkspaceScene extends Phaser.Scene {
   }
 
   create() {
+    this.input.mouse.disableContextMenu();
+
     const { width, height } = this.cameras.main;
 
     // površje mize
@@ -67,17 +69,13 @@ export default class WorkspaceScene extends Phaser.Scene {
     
     this.infoWindow.add([infoBox, infoText]);
     this.infoText = infoText;
+    
 
     this.challenges = [
       {
         prompt: 'Sestavi preprosti električni krog z baterijo in svetilko.',
         requiredComponents: ['baterija', 'svetilka', 'žica', 'žica', 'žica', 'žica', 'žica', 'žica'],
         theory: ['Osnovni električni krog potrebuje vir, to je v našem primeru baterija. Potrebuje tudi porabnike, to je svetilka. Električni krog je v našem primeru sklenjen, kar je nujno potrebno, da električni tok teče preko prevodnikov oziroma žic.']
-      },
-      {
-        prompt: 'Sestavi preprosti nesklenjeni električni krog z baterijo, svetilko in stikalom.',
-        requiredComponents: ['baterija', 'svetilka', 'žica', 'stikalo-off'],
-        theory: ['V nesklenjenem krogu je stikalo odprto, kar pomeni, da je električni tok prekinjen. Svetilka posledično zato ne sveti.']
       },
       {
         prompt: 'Sestavi preprosti sklenjeni električni krog z baterijo, svetilko in stikalom.',
@@ -195,12 +193,12 @@ export default class WorkspaceScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // komponente v stranski vrstici
-    this.createComponent(panelWidth / 2, 100, 'baterija', 0xffcc00);
-    //this.createComponent(panelWidth / 2, 180, 'upor', 0xff6600);
-    this.createComponent(panelWidth / 2, 260, 'svetilka', 0xff0000);
-    this.createComponent(panelWidth / 2, 340, 'stikalo-on', 0x666666);
-    this.createComponent(panelWidth / 2, 420, 'stikalo-off', 0x666666);
-    this.createComponent(panelWidth / 2, 500, 'žica', 0x0066cc);
+    this.createComponent(panelWidth / 2, 120, 'baterija', 0xffcc00);
+    this.createComponent(panelWidth / 2, 220, 'svetilka', 0xff0000);
+    this.createComponent(panelWidth / 2, 320, 'žica', 0x0066cc);
+    this.createComponent(panelWidth / 2, 420, 'stikalo-on', 0x666666);
+    this.createComponent(panelWidth / 2, 520, 'upor', 0xff6600);
+    //this.createComponent(panelWidth / 2, 420, 'stikalo-off', 0x666666);
    // this.createComponent(panelWidth / 2, 580, 'ampermeter', 0x00cc66);
    // this.createComponent(panelWidth / 2, 660, 'voltmeter', 0x00cc66);
 
@@ -271,11 +269,11 @@ export default class WorkspaceScene extends Phaser.Scene {
   getComponentDetails(type) {
     const details = {
         'baterija': 'Napetost: 3.3 V\nVir električne energije',
-        //'upor': 'Uporabnost: omejuje tok\nMeri se v ohmih (Ω)',
+        'upor': 'Uporabnost: omejuje tok\nMeri se v ohmih (Ω)',
         'svetilka': 'Pretvarja električno energijo v svetlobo',
-        'stikalo-on': 'Dovoljuje pretok toka',
+        'stikalo-on': 'Nadzoruje pretok toka\nKlikni za ugašanje/užiganje',
         'stikalo-off': 'Prepreči pretok toka',
-        'žica': 'Povezuje komponente\nKlikni za obračanje',
+        'žica': 'Povezuje komponente',
         //'ampermeter': 'Meri električni tok\nEnota: amperi (A)',
         //'voltmeter': 'Meri električno napetost\nEnota: volti (V)'
     };
@@ -484,6 +482,7 @@ export default class WorkspaceScene extends Phaser.Scene {
         component.add(componentImage);
         component.setData('logicComponent', null)
         break;
+        */
         case 'upor':
         id = "res_" + this.getRandomInt(1000, 9999);
         comp = new Resistor(
@@ -501,7 +500,6 @@ export default class WorkspaceScene extends Phaser.Scene {
         component.add(componentImage);
         component.setData('logicComponent', comp)
         break;
-*/
     }
 
     component.on('pointerover', () => {
@@ -526,7 +524,16 @@ export default class WorkspaceScene extends Phaser.Scene {
     });
 
     // Label
-    const label = this.add.text(0, 30, type, {
+    const displayNames = {
+      'baterija': 'baterija',
+      'svetilka': 'svetilka',
+      'stikalo-on': 'stikalo',
+      'stikalo-off': 'stikalo',
+      'žica': 'žica',
+      'upor': 'upor'
+    };
+
+    const label = this.add.text(0, 40, displayNames[type] || type, {
       fontSize: '11px',
       color: '#fff',
       backgroundColor: '#00000088',
@@ -584,7 +591,11 @@ export default class WorkspaceScene extends Phaser.Scene {
 
         component.setData('isRotated', false);
         component.setData('isInPanel', false);
-
+        
+        // odstrani ime ce je na gridu
+        if (component.list && component.list[1]) {
+        component.list[1].setVisible(false);
+        }
         this.createComponent(
           component.getData('originalX'),
           component.getData('originalY'),
@@ -616,20 +627,57 @@ export default class WorkspaceScene extends Phaser.Scene {
       });
     });
 
-    component.on('pointerdown', () => {
-      if (!component.getData('isInPanel')) {
+
+    component.on('pointerdown', (pointer) => {
+    const type = component.getData('type');
+    const logic = component.getData('logicComponent');
+    const isInPanel = component.getData('isInPanel');
+
+    // levi klik na switch je toggle
+    if (pointer.leftButtonDown() && (type === 'stikalo-on' || type === 'stikalo-off') && !isInPanel) {
+    console.log('LEFT CLICK SWITCH DETECTED - toggling switch');
+
+    // toggla se switch
+    logic.is_on = !logic.is_on;
+
+    const img = component.list[0];
+    if (logic.is_on) {
+        img.setTexture('stikalo-on');
+        component.setData('type', 'stikalo-on');
+    } else {
+        img.setTexture('stikalo-off');
+        component.setData('type', 'stikalo-off');
+    }
+
+    // re-run simulacijo
+    const simResult = this.graph.simulate();
+    this.sim = (simResult === 1);
+
+    return;
+}
+
+    if (component.getData('isDragging')) return;
+
+    // desni click na gridu je rotate element
+    if (pointer.rightButtonDown() && !isInPanel) {
+        console.log('RIGHT CLICK ROTATE DETECTED');
         const currentRotation = component.getData('rotation');
         const newRotation = (currentRotation + 90) % 360;
+
         component.setData('rotation', newRotation);
-        component.setData('isRotated', !component.getData('isRotated'));
 
         this.tweens.add({
-          targets: component,
-          angle: newRotation,
-          duration: 150,
-          ease: 'Cubic.easeOut',
+            targets: component,
+            angle: newRotation,
+            duration: 150,
+            ease: 'Cubic.easeOut',
+            onComplete: () => {
+            this.updateLogicNodePositions(component);
+        }
         });
-      }
+
+        this.updateLogicNodePositions(component);
+    }
     });
 
     // hover efekt
