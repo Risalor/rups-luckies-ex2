@@ -106,8 +106,17 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
 
         // Tasks for logic gates workspace (simple progression)
         this.tasks = [
-            { id: 'and_task', prompt: 'Naloga 1: Sestavi vezje, kjer izhod AND vrati pravo vrednost (poveži AND z Bulb).', gateType: 'AND', points: 10, completed: false },
-            { id: 'or_task', prompt: 'Naloga 2: Sestavi vezje, kjer izhod OR vrne pravo vrednost (poveži OR z Bulb).', gateType: 'OR', points: 10, completed: false }
+            { id: 'and_task', prompt: 'Naloga 1: Poveži AND z Bulb (preveri osnovna AND vrata).', gateType: 'AND', points: 10, completed: false },
+            { id: 'or_task', prompt: 'Naloga 2: Poveži OR z Bulb (preveri osnovna OR vrata).', gateType: 'OR', points: 10, completed: false },
+            { id: 'not_task', prompt: 'Naloga 3: Poveži NOT z Bulb (preveri negacijo).', gateType: 'NOT', points: 10, completed: false },
+            { id: 'nand_task', prompt: 'Naloga 4: Poveži NAND z Bulb.', gateType: 'NAND', points: 10, completed: false },
+            { id: 'nor_task', prompt: 'Naloga 5: Poveži NOR z Bulb.', gateType: 'NOR', points: 10, completed: false },
+            { id: 'xor_task', prompt: 'Naloga 6: Poveži XOR z Bulb.', gateType: 'XOR', points: 10, completed: false },
+            { id: 'xnor_task', prompt: 'Naloga 7: Poveži XNOR z Bulb.', gateType: 'XNOR', points: 10, completed: false },
+            // mixed tasks: specify arrays [childA, childB, top] meaning: Bulb <- top gate whose inputs include childA and childB
+            { id: 'mix_1', prompt: 'Naloga 8: Naredi vezje: Bulb poveži na XOR; XOR naj ima vhoda AND in OR.', gateType: ['AND','OR','XOR'], points: 20, completed: false },
+            { id: 'mix_2', prompt: 'Naloga 9: Naredi vezje: Bulb poveži na OR; OR naj ima vhoda NAND in NOR.', gateType: ['NAND','NOR','OR'], points: 20, completed: false },
+            { id: 'mix_3', prompt: 'Naloga 10: Naredi vezje: Bulb poveži na XNOR; XNOR naj ima vhoda AND in XOR.', gateType: ['AND','XOR','XNOR'], points: 20, completed: false }
         ];
         const savedTaskIndex = localStorage.getItem('logicTasksIndex');
         this.currentTaskIndex = savedTaskIndex !== null ? parseInt(savedTaskIndex) : 0;
@@ -758,29 +767,73 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
     }
 
     checkCurrentTaskCompletion() {
-        if (!this.tasks || this.currentTaskIndex == null) return;
+        // return boolean: true if current task completed, false otherwise
+        if (!this.tasks || this.currentTaskIndex == null) return false;
         const task = this.tasks[this.currentTaskIndex];
-        if (!task) return;
+        if (!task) return false;
 
-        // we look for a bulb (LIGHT) whose input comes from a gate of required type
+        // ensure gate outputs are up-to-date before checking
+        try { if (this.logicCircuit && typeof this.logicCircuit.evaluate === 'function') this.logicCircuit.evaluate(); } catch (e) { /* ignore */ }
+
+        // we look for a bulb (LIGHT) whose evaluated output is true and whose input structure matches the task requirement
         for (const [id, gate] of this.logicCircuit.gates) {
-            if (gate.operation === 'LIGHT') {
-                const src = gate.inputGates[0];
-                if (!src) continue;
+            if (gate.operation !== 'LIGHT') continue;
+            // require the bulb to evaluate to true for a task to be considered complete
+            let bulbVal = false;
+            try { bulbVal = !!(gate && gate.getOutput && gate.getOutput()); } catch (e) { bulbVal = false; }
+            if (!bulbVal) continue;
+
+            const src = gate.inputGates[0];
+            if (!src) continue;
+
+            // support task.gateType as string (single gate) or array (composed requirement)
+            if (typeof task.gateType === 'string') {
                 if (src.operation === task.gateType) {
-                    // ensure the source gate has at least two inputs for AND/OR tasks (except NOT)
                     const numInputs = src.inputGates ? src.inputGates.filter(Boolean).length : 0;
-                    if (task.gateType === 'NOT' || task.gateType === 'BUFFER' || numInputs >= 1) {
-                        // mark completed
+                    // for NOT/BUFFER we don't require >=1 (they naturally have 1), for other gates ensure at least one input exists
+                    const okStructure = (task.gateType === 'NOT' || task.gateType === 'BUFFER') ? true : (numInputs >= 1);
+                    if (okStructure) {
                         task.completed = true;
                         this.showStatus('Naloga opravljena!', '#00aa00', 2000);
-                        this.addPoints(task.points);
+                        try { this.addPoints(task.points); } catch (e) {}
                         this.time.delayedCall(1500, () => this.nextTask());
-                        return;
+                        return true;
+                    }
+                }
+            } else if (Array.isArray(task.gateType)) {
+                const req = task.gateType;
+                if (req.length === 2) {
+                    const child = req[0]; const top = req[1];
+                    if (src.operation === top) {
+                        const inputs = src.inputGates ? src.inputGates.filter(Boolean) : [];
+                        const hasChild = inputs.some(g => g && g.operation === child);
+                        if (hasChild) {
+                            task.completed = true;
+                            this.showStatus('Naloga opravljena!', '#00aa00', 2000);
+                            try { this.addPoints(task.points); } catch (e) {}
+                            this.time.delayedCall(1500, () => this.nextTask());
+                            return true;
+                        }
+                    }
+                } else if (req.length >= 3) {
+                    const childA = req[0]; const childB = req[1]; const top = req[2];
+                    if (src.operation === top) {
+                        const inputs = src.inputGates ? src.inputGates.filter(Boolean) : [];
+                        const hasA = inputs.some(g => g && g.operation === childA);
+                        const hasB = inputs.some(g => g && g.operation === childB);
+                        if (hasA && hasB) {
+                            task.completed = true;
+                            this.showStatus('Naloga opravljena!', '#00aa00', 2000);
+                            try { this.addPoints(task.points); } catch (e) {}
+                            this.time.delayedCall(1500, () => this.nextTask());
+                            return true;
+                        }
                     }
                 }
             }
         }
+
+        return false;
     }
 
     nextTask() {
