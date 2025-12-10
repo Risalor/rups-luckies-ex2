@@ -88,13 +88,13 @@ export class LogicGate {
         
         switch (this.operation) {
             case 'AND':
-                return inputs.every(val => val === true);
+                return inputs.length == 2 && inputs.every(val => val === true);
             case 'OR':
                 return inputs.some(val => val === true);
             case 'NOT':
                 return !inputs[0];
             case 'NAND':
-                return !inputs.every(val => val === true);
+                return inputs.length < 2 || !inputs.every(val => val === true);
             case 'NOR':
                 return !inputs.some(val => val === true);
             case 'XOR':
