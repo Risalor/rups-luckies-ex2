@@ -27,6 +27,8 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
     }
 
     create() {
+        this.input.mouse.disableContextMenu();
+
         const { width, height } = this.cameras.main;
 
         // ensure grid size is available before drawing
@@ -233,8 +235,17 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
         // store grid start to align exactly with the sidebar width so grid touches it
         this.gridStartX = panelWidth;
 
-        // Add update handler for continuous connection updates during drag
-        this.events.on('update', () => this.updatePreviewLine());
+        // Real-time circuit evaluation state
+        this.lastEvaluationTime = 0;
+        this.evaluationThrottle = 50; // Evaluate at most every 50ms
+        this.pinTooltip = null; // Current tooltip object
+        this.pinTooltipTimer = null; // Timer for showing tooltip
+
+        // Add update handler for continuous connection updates during drag and real-time evaluation
+        this.events.on('update', () => {
+            this.updatePreviewLine();
+            this.updateCircuitEvaluation();
+        });
     }
 
     updatePreviewLine() {
@@ -276,6 +287,100 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
         this.previewLine.moveTo(fromX, fromY);
         this.previewLine.lineTo(toX, toY);
         this.previewLine.strokePath();
+    }
+
+    updateCircuitEvaluation() {
+        // Throttle circuit evaluation to avoid excessive re-computation
+        const now = Date.now();
+        if (now - this.lastEvaluationTime < this.evaluationThrottle) {
+            return;
+        }
+        this.lastEvaluationTime = now;
+
+        // Evaluate the circuit
+        try {
+            if (this.logicCircuit && typeof this.logicCircuit.evaluate === 'function') {
+                this.logicCircuit.evaluate();
+            }
+        } catch (e) {
+            console.error('Circuit evaluation error:', e);
+        }
+
+        // Update bulb labels with real-time status
+        try {
+            (this.placedComponents || []).forEach(c => {
+                if (c.getData('isBulb')) {
+                    const gate = c.getData('logicGate');
+                    const label = c.getData('labelTextObj');
+                    const displayName = c.getData('displayName') || 'Bulb';
+                    if (gate && label) {
+                        const val = !!gate.getOutput();
+                        label.setText(`${displayName} = ${val ? 'true' : 'false'}`);
+                    }
+                }
+            });
+        } catch (e) {
+            // ignore visual update errors
+        }
+    }
+
+    showPinTooltip(pin, container, isOutput) {
+        // Show a tooltip displaying the pin's current state
+        this.hidePinTooltip();
+
+        try {
+            const gate = container.getData('logicGate');
+            if (!gate) return;
+
+            // Get the pin's state
+            let pinValue = false;
+            if (isOutput) {
+                pinValue = !!gate.getOutput();
+            } else {
+                // For input pins, we can show the input value or source value
+                const inputPins = container.getData('inputPins') || [];
+                const pinIndex = inputPins.indexOf(pin);
+                if (pinIndex >= 0) {
+                    const inputGate = gate.inputGates[pinIndex];
+                    pinValue = inputGate ? !!inputGate.getOutput() : false;
+                }
+            }
+
+            // Get pin world position
+            const pinWorldX = container.x + pin.x;
+            const pinWorldY = container.y + pin.y;
+
+            // Create tooltip graphics and text
+            const tooltipBg = this.add.rectangle(pinWorldX, pinWorldY - 25, 80, 30, 0x000000, 0.9)
+                .setStrokeStyle(2, 0xffffff)
+                .setOrigin(0.5)
+                .setDepth(1000);
+
+            const tooltipText = this.add.text(pinWorldX, pinWorldY - 25, pinValue ? 'true' : 'false', {
+                fontSize: '14px',
+                color: '#ffffff',
+                fontStyle: 'bold'
+            })
+                .setOrigin(0.5)
+                .setDepth(1001);
+
+            this.pinTooltip = { bg: tooltipBg, text: tooltipText };
+        } catch (e) {
+            // ignore tooltip errors
+        }
+    }
+
+    hidePinTooltip() {
+        // Hide the current pin tooltip
+        if (this.pinTooltip) {
+            try {
+                if (this.pinTooltip.bg && this.pinTooltip.bg.destroy) this.pinTooltip.bg.destroy();
+                if (this.pinTooltip.text && this.pinTooltip.text.destroy) this.pinTooltip.text.destroy();
+            } catch (e) {
+                // ignore
+            }
+            this.pinTooltip = null;
+        }
     }
 
     createGrid() {
@@ -478,6 +583,14 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                     // Try to complete connection to this input pin
                     this.completeConnection(inPin, container, false);
                 });
+
+                // Add hover handlers for pin state tooltip
+                inPin.on('pointerover', () => {
+                    this.showPinTooltip(inPin, container, false);
+                });
+                inPin.on('pointerout', () => {
+                    this.hidePinTooltip();
+                });
                 container.add(inPin);
                 inputPins.push(inPin);
             }
@@ -507,6 +620,14 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
 
                 // Try to complete connection from this output pin
                 this.completeConnection(outputPin, container, true);
+            });
+
+            // Add hover handlers for pin state tooltip
+            outputPin.on('pointerover', () => {
+                this.showPinTooltip(outputPin, container, true);
+            });
+            outputPin.on('pointerout', () => {
+                this.hidePinTooltip();
             });
             container.add(outputPin);
         }
@@ -564,6 +685,17 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
             container.y = dragY;
             // Update connection lines in real-time while dragging
             this.updateConnectionsForGate(container.getData('gateId'));
+        });
+
+        // Add right-click handler for deletion
+        container.on('pointerdown', (pointer) => {
+            if (pointer.button === 2) { // Right-click (button 2)
+                const gateId = container.getData('gateId');
+                if (gateId && !container.getData('isInPanel')) {
+                    // Only delete if it's a placed gate (not in panel)
+                    this.deleteGate(container, gateId);
+                }
+            }
         });
 
         container.on('dragend', () => {
@@ -893,6 +1025,56 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
         try { this.bulbIndices = new Set(); } catch (e) {}
         this._origCheckTextSet('Workspace reset');
         this.time.delayedCall(1500, () => this._origCheckTextSet(''));
+    }
+
+    deleteGate(container, gateId) {
+        // Delete a placed gate and all its connections
+        try {
+            // Remove any connection graphics that reference this gate
+            this.connections = this.connections.filter(conn => {
+                if (conn.fromId === gateId || conn.toId === gateId) {
+                    try { if (conn.gfx) conn.gfx.destroy(); } catch (e) { /* ignore */ }
+                    try { if (conn.hitZone) conn.hitZone.destroy(); } catch (e) { /* ignore */ }
+                    return false; // remove this connection from the array
+                }
+                return true;
+            });
+
+            // Remove the gate from the logic circuit
+            try {
+                if (this.logicCircuit && typeof this.logicCircuit.removeGate === 'function') {
+                    this.logicCircuit.removeGate(gateId);
+                }
+            } catch (e) { /* ignore */ }
+
+            // Remove from placedComponents list
+            this.placedComponents = this.placedComponents.filter(c => c !== container);
+
+            // Free any used numeric index for inputs/bulbs
+            try {
+                const idx = container.getData('displayIndex');
+                const t = container.getData('type');
+                if (t === 'input' && typeof idx === 'number') {
+                    this.inputIndices.delete(idx);
+                }
+                if (t === 'bulb' && typeof idx === 'number') {
+                    this.bulbIndices.delete(idx);
+                }
+            } catch (e) { /* ignore */ }
+
+            // Cancel any active connection involving this gate
+            if (this.connectingPin && (this.connectingPin.container === container)) {
+                this.cancelConnection();
+            }
+
+            // Destroy the container
+            container.destroy();
+
+            this.checkText.setText('Gate deleted');
+            this.time.delayedCall(1000, () => this._origCheckTextSet(''));
+        } catch (e) {
+            console.error('Error deleting gate:', e);
+        }
     }
 
     updateConnectionsForGate(gateId) {
