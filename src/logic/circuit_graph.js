@@ -106,42 +106,47 @@ class CircuitGraph {
     }
   }
 
-  getConductivePaths(start, end, maxPaths = 4) {
+   getConductivePaths(start, end, maxPaths = Infinity) {
     if (!start || !end) return [];
 
-    const paths = [];
-    const visitedNodes = new Set();
+    const results = [];
+    const visitedComps = new Set();
 
-    const dfs = (node, pathNodes) => {
-      if (paths.length >= maxPaths) return;
-      visitedNodes.add(node);
+    // dfs
+    const dfs = (node, nodePath) => {
+      if (results.length >= maxPaths) return;
 
-      // appenda node na current path copy
-      const newPath = [...pathNodes, node];
+      const newNodePath = [...nodePath, node];
 
-      if (this.sameNode(node, end) && newPath.length > 1) {
-        paths.push(newPath);
-        visitedNodes.delete(node);
+      if (this.sameNode(node, end) && newNodePath.length > 1) {
+        results.push(newNodePath);
         return;
       }
 
       for (const comp of this.getConnections(node)) {
         if (!this.componentConducts(comp)) continue;
+        if (visitedComps.has(comp)) continue; 
 
-        // najde sosednji node
         const next = this.sameNode(comp.start, node) ? comp.end : comp.start;
         if (!next) continue;
-        if (visitedNodes.has(next)) continue;
 
-        dfs(next, newPath);
-        if (paths.length >= maxPaths) break;
+        visitedComps.add(comp);
+        dfs(next, newNodePath);
+        visitedComps.delete(comp);
+
+        if (results.length >= maxPaths) break;
       }
-
-      visitedNodes.delete(node);
     };
 
     dfs(start, []);
-    return paths;
+
+    // debug logging
+    console.log(`getConductivePaths: found ${results.length} path(s) from ${start.id} to ${end.id}`);
+    results.forEach((p, i) => {
+      console.log(` path[${i}]: nodes = ${p.map(n => n.id + '(' + n.x + ',' + n.y + ')').join(' -> ')}`);
+    });
+
+    return results;
   }
 
   addComponent(component) {
