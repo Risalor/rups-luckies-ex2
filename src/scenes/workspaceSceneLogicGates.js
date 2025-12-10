@@ -114,17 +114,17 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
 
         // Tasks for logic gates workspace (simple progression)
         this.tasks = [
-            { id: 'and_task', prompt: 'Naloga 1: Poveži AND z Bulb (preveri osnovna AND vrata).', gateType: 'AND', points: 10, completed: false },
-            { id: 'or_task', prompt: 'Naloga 2: Poveži OR z Bulb (preveri osnovna OR vrata).', gateType: 'OR', points: 10, completed: false },
-            { id: 'not_task', prompt: 'Naloga 3: Poveži NOT z Bulb (preveri negacijo).', gateType: 'NOT', points: 10, completed: false },
-            { id: 'nand_task', prompt: 'Naloga 4: Poveži NAND z Bulb.', gateType: 'NAND', points: 10, completed: false },
-            { id: 'nor_task', prompt: 'Naloga 5: Poveži NOR z Bulb.', gateType: 'NOR', points: 10, completed: false },
-            { id: 'xor_task', prompt: 'Naloga 6: Poveži XOR z Bulb.', gateType: 'XOR', points: 10, completed: false },
-            { id: 'xnor_task', prompt: 'Naloga 7: Poveži XNOR z Bulb.', gateType: 'XNOR', points: 10, completed: false },
+            { id: 'and_task', prompt: 'Naloga 1: Poveži AND z OUTPUT (preveri osnovna AND vrata).', gateType: 'AND', points: 10, completed: false },
+            { id: 'or_task', prompt: 'Naloga 2: Poveži OR z OUTPUT (preveri osnovna OR vrata).', gateType: 'OR', points: 10, completed: false },
+            { id: 'not_task', prompt: 'Naloga 3: Poveži NOT z OUTPUT (preveri negacijo).', gateType: 'NOT', points: 10, completed: false },
+            { id: 'nand_task', prompt: 'Naloga 4: Poveži NAND z OUTPUT.', gateType: 'NAND', points: 10, completed: false },
+            { id: 'nor_task', prompt: 'Naloga 5: Poveži NOR z OUTPUT.', gateType: 'NOR', points: 10, completed: false },
+            { id: 'xor_task', prompt: 'Naloga 6: Poveži XOR z OUTPUT.', gateType: 'XOR', points: 10, completed: false },
+            { id: 'xnor_task', prompt: 'Naloga 7: Poveži XNOR z OUTPUT.', gateType: 'XNOR', points: 10, completed: false },
             // mixed tasks: specify arrays [childA, childB, top] meaning: Bulb <- top gate whose inputs include childA and childB
-            { id: 'mix_1', prompt: 'Naloga 8: Naredi vezje: Bulb poveži na XOR; XOR naj ima vhoda AND in OR.', gateType: ['AND','OR','XOR'], points: 20, completed: false },
-            { id: 'mix_2', prompt: 'Naloga 9: Naredi vezje: Bulb poveži na OR; OR naj ima vhoda NAND in NOR.', gateType: ['NAND','NOR','OR'], points: 20, completed: false },
-            { id: 'mix_3', prompt: 'Naloga 10: Naredi vezje: Bulb poveži na XNOR; XNOR naj ima vhoda AND in XOR.', gateType: ['AND','XOR','XNOR'], points: 20, completed: false }
+            { id: 'mix_1', prompt: 'Naloga 8: Naredi vezje: OUTPUT poveži na XOR; XOR naj ima vhoda AND in OR.', gateType: ['AND','OR','XOR'], points: 20, completed: false },
+            { id: 'mix_2', prompt: 'Naloga 9: Naredi vezje: OUTPUT poveži na OR; OR naj ima vhoda NAND in NOR.', gateType: ['NAND','NOR','OR'], points: 20, completed: false },
+            { id: 'mix_3', prompt: 'Naloga 10: Naredi vezje: OUTPUT poveži na XNOR; XNOR naj ima vhoda AND in XOR.', gateType: ['AND','XOR','XNOR'], points: 20, completed: false }
         ];
         const savedTaskIndex = localStorage.getItem('logicTasksIndex');
         this.currentTaskIndex = savedTaskIndex !== null ? parseInt(savedTaskIndex) : 0;
@@ -312,7 +312,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                 if (c.getData('isBulb')) {
                     const gate = c.getData('logicGate');
                     const label = c.getData('labelTextObj');
-                    const displayName = c.getData('displayName') || 'Bulb';
+                    const displayName = c.getData('displayName') || 'OUTPUT';
                     if (gate && label) {
                         const val = !!gate.getOutput();
                         label.setText(`${displayName} = ${val ? 'true' : 'false'}`);
@@ -469,7 +469,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
 
         // Prevent connecting input gates to each other
         if (sourceType === 'input' && targetType === 'input') {
-            this.checkText.setText('Ne morete povezati dveh Input vrat');
+            this.checkText.setText('Ne morete povezati dveh INPUT vrat');
             this.time.delayedCall(1200, () => this._origCheckTextSet(''));
             this.cancelConnection();
             return;
@@ -770,7 +770,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                     let idx = 1;
                     while (this.inputIndices.has(idx)) idx++;
                     this.inputIndices.add(idx);
-                    const inputName = `Input ${idx}`;
+                    const inputName = `INPUT ${idx}`;
                     container.setData('displayName', inputName);
                     container.setData('displayIndex', idx);
                     label.setText(`${inputName} = true`);
@@ -781,7 +781,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                     let bidx = 1;
                     while (this.bulbIndices.has(bidx)) bidx++;
                     this.bulbIndices.add(bidx);
-                    const displayName = `Bulb ${bidx}`;
+                    const displayName = `OUTPUT ${bidx}`;
                     label.setText(displayName);
                     container.setData('displayName', displayName);
                     container.setData('displayIndex', bidx);
@@ -826,7 +826,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                     if (gate && gate.setValue) gate.setValue(newVal);
 
                     container.setData('inputValue', newVal);
-                    const inputName = container.getData('displayName') || labelText || `Input`;
+                    const inputName = container.getData('displayName') || labelText || `INPUT`;
                     label.setText(`${inputName} = ${newVal ? 'true' : 'false'}`);
                     this.checkText.setText(`${inputName} = ${newVal ? 'true' : 'false'}`);
                     this.time.delayedCall(1200, () => this._origCheckTextSet(''));
@@ -859,7 +859,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
         try {
             (this.placedComponents || []).forEach(c => {
                 if (c.getData('isBulb')) {
-                    const name = c.getData('displayName') || c.getData('gateId') || 'Bulb';
+                    const name = c.getData('displayName') || c.getData('gateId') || 'OUTPUT';
                     const gate = c.getData('logicGate');
                     let val = false;
                     try { val = !!(gate && gate.getOutput()); } catch (e) { val = false; }
@@ -876,7 +876,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                 if (c.getData('isBulb')) {
                     const gate = c.getData('logicGate');
                     const label = c.getData('labelTextObj');
-                    const displayName = c.getData('displayName') || 'Bulb';
+                    const displayName = c.getData('displayName') || 'OUTPUT';
                     if (gate && label) {
                         const val = !!gate.getOutput();
                         label.setText(`${displayName} = ${val ? 'true' : 'false'}`);
@@ -894,7 +894,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
         } catch (e) { /* ignore */ }
 
     // Show concise bulb outputs and task status
-    const statusText = bulbEntries.length > 0 ? `Bulb outputs: ${bulbEntries.join(', ')}` : 'No bulbs present';
+    const statusText = bulbEntries.length > 0 ? `OUTPUT values: ${bulbEntries.join(', ')}` : 'No OUTPUT present';
 
         if (taskCompleted && this.tasks && this.tasks[this.currentTaskIndex] && !this.tasks[this.currentTaskIndex].completed) {
             // award points and mark completed, then advance after a short delay
