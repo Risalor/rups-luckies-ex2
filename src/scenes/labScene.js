@@ -162,8 +162,9 @@ export default class LabScene extends Phaser.Scene {
     interactiveZoneLogicGates.on('pointerdown', () => {
       this.cameras.main.fade(300, 0, 0, 0);
       this.time.delayedCall(300, () => {
-        this.scene.start('WorkspaceScene');
-        console.log("Start the logic gates workspace")
+        // start the logic gates workspace scene (registered key)
+        this.scene.start('workspaceSceneLogicGates');
+        console.log('Start the logic gates workspace');
       });
     });
     
