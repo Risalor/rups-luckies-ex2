@@ -1,25 +1,17 @@
 import Phaser from 'phaser';
 
+const API_URL = 'http://localhost:5000/api';
+
 export default class LoginScene extends Phaser.Scene {
     constructor() {
         super('LoginScene');
     }
 
     create() {
-        var users = JSON.parse(localStorage.getItem('users')) || [];
-
-        // this.add.text(200, 100, 'Vnesi svoje uporabniško ime in geslo!', {
-        //     fontFamily: 'Arial',
-        //     fontSize: '20px',
-        //     color: '#222'
-        // });
-
         const { width, height } = this.scale;
 
-        // --- 1️⃣ Ozadje laboratorija (enako kot v LabScene) ---
-        // svetla stena
+        // --- Ozadje laboratorija ---
         this.add.rectangle(0, 0, width, height - 150, 0xe8e8e8).setOrigin(0);
-        // tla
         this.add.rectangle(0, height - 150, width, 150, 0xd4c4a8).setOrigin(0);
 
         // miza
@@ -28,10 +20,9 @@ export default class LoginScene extends Phaser.Scene {
         const tableWidth = 500;
         const tableHeight = 250;
 
-        // zgornja ploskev mize
         this.add.rectangle(tableX, tableY, tableWidth, 30, 0x8b4513).setOrigin(0.5);
-        // površina mize z mrežo
         const surface = this.add.rectangle(tableX, tableY + 15, tableWidth - 30, tableHeight - 30, 0xa0826d).setOrigin(0.5, 0);
+        
         const grid = this.add.graphics();
         grid.lineStyle(1, 0x8b7355, 0.3);
         const gridSize = 30;
@@ -120,16 +111,12 @@ export default class LoginScene extends Phaser.Scene {
         password.style.backgroundColor = '#f9f9f9';
         document.body.appendChild(password);
 
-        // const profilePic = document.createElement('input');
-        // profilePic.type = 'file';
-        // profilePic.accept = 'image/*';
-        // profilePic.style.position = 'absolute';
-        // profilePic.style.width = '400px';
-        // profilePic.style.left = '400px';
-        // profilePic.style.top = '290px';
-        // document.body.appendChild(profilePic);
-
-        //console.log(profilePic);
+        // Loading indicator (hidden by default)
+        const loadingText = this.add.text(width / 2, panelY + 220, '', {
+            fontFamily: 'Arial',
+            fontSize: '16px',
+            color: '#666'
+        }).setOrigin(0.5).setVisible(false);
 
         const buttonWidth = 180;  
         const buttonHeight = 45;  
@@ -176,37 +163,105 @@ export default class LoginScene extends Phaser.Scene {
                     cornerRadius
                 );
             })
-            .on('pointerdown', () => {
+            .on('pointerdown', async () => {
                 const usernameTrim = username.value.trim();
                 const passwordTrim = password.value.trim();
                 const pfps = ['avatar1','avatar2','avatar3','avatar4','avatar5','avatar6','avatar7','avatar8','avatar9','avatar10','avatar11'];
-                const pfpKey = pfps[Math.floor(Math.random() * pfps.length)];
+                const randomPfp = pfps[Math.floor(Math.random() * pfps.length)];
 
-                if (usernameTrim && passwordTrim) {
-                    const existingUser = users.find(u => u.username == usernameTrim);
-                    if (existingUser) {
-                        if (existingUser.password !== passwordTrim) {
-                            alert('Napačno geslo!');
-                            return;
-                        }
-                    } else {
-                        users.push({ username: usernameTrim, password: passwordTrim, score: 0, profilePic: pfpKey });
-                        localStorage.setItem('users', JSON.stringify(users));
-                    }
+                if (!usernameTrim || !passwordTrim) {
+                    alert('Vnesi uporabniško ime in geslo!');
+                    return;
+                }
 
+                // Show loading
+                loadingText.setText('Prijavljam...').setVisible(true);
+                loginButton.disableInteractive();
+
+                try {
+                    // First try to login
+                    const loginResponse = await this.makeApiRequest(`${API_URL}/users/login`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            username: usernameTrim,
+                            password: passwordTrim
+                        })
+                    });
+
+                    // Login successful
                     localStorage.setItem('username', usernameTrim);
-                    localStorage.setItem('profilePic', pfpKey);
-
+                    localStorage.setItem('userData', JSON.stringify(loginResponse.user));
+                    
                     username.remove();
                     password.remove();
+                    loadingText.setVisible(false);
 
                     this.scene.start('LabScene');
-                } else {
-                    alert('Vnesi uporabniško ime in geslo!');
+
+                } catch (loginError) {
+                    try {
+                        console.log('Login failed, trying registration...');
+                        
+                        const registerResponse = await this.makeApiRequest(`${API_URL}/users/register`, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                username: usernameTrim,
+                                password: passwordTrim,
+                                displayImage: randomPfp
+                            })
+                        });
+
+                        const finalLoginResponse = await this.makeApiRequest(`${API_URL}/users/login`, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                username: usernameTrim,
+                                password: passwordTrim
+                            })
+                        });
+
+                        localStorage.setItem('username', usernameTrim);
+                        localStorage.setItem('userData', JSON.stringify(finalLoginResponse.user));
+                        
+                        username.remove();
+                        password.remove();
+                        loadingText.setVisible(false);
+
+                        this.scene.start('LabScene');
+
+                    } catch (registerError) {
+                        console.error('Registration failed:', registerError);
+                        loadingText.setVisible(false);
+                        loginButton.setInteractive();
+                    }
                 }
             });
 
-        // počisti inpute ob izhodu
+        this.makeApiRequest = async (url, options = {}) => {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            };
+
+            const response = await fetch(url, {
+                ...defaultOptions,
+                ...options,
+                headers: {
+                    ...defaultOptions.headers,
+                    ...options.headers,
+                },
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || `HTTP ${response.status}`);
+            }
+
+            return data;
+        };
+
+        // Počisti inpute ob izhodu
         this.events.once('shutdown', () => {
             username.remove();
             password.remove();
@@ -216,10 +271,9 @@ export default class LoginScene extends Phaser.Scene {
             fontFamily: 'Arial',
             fontSize: '20px',
             color: '#0066ff',
-            // backgroundColor: '#e1e9ff',
             padding: { x: 20, y: 10 }
         })
-            .setOrigin(0, 0) // levo zgoraj
+            .setOrigin(0, 0)
             .setInteractive({ useHandCursor: true })
             .on('pointerover', () => backButton.setStyle({ color: '#0044cc' }))
             .on('pointerout', () => backButton.setStyle({ color: '#0066ff' }))
@@ -229,10 +283,18 @@ export default class LoginScene extends Phaser.Scene {
                 this.scene.start('MenuScene');
             });
 
-        //localStorage.clear();
-
-        // this.input.keyboard.on('keydown-ESC', () => {
-        //     this.scene.start('MenuScene');
-        // });
+        const handleEnter = (e) => {
+            if (e.key === 'Enter') {
+                loginButton.emit('pointerdown');
+            }
+        };
+        
+        username.addEventListener('keypress', handleEnter);
+        password.addEventListener('keypress', handleEnter);
+        
+        this.events.once('shutdown', () => {
+            username.removeEventListener('keypress', handleEnter);
+            password.removeEventListener('keypress', handleEnter);
+        });
     }
 }
