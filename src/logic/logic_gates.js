@@ -103,6 +103,9 @@ export class LogicGate {
                 return inputs.filter(val => val === true).length % 2 === 0;
             case 'BUFFER':
                 return inputs[0];
+            case 'LIGHT':
+                // light bulb just reflects its single input (terminal probe)
+                return !!inputs[0];
             default:
                 throw new Error(`Unknown operation: ${this.operation}`);
         }
@@ -202,7 +205,8 @@ export const GateTypes = {
     nand : 'NAND',
     nor : 'NOR',
     xor : 'XOR',
-    xnor : 'XNOR'
+    xnor : 'XNOR',
+    bulb : 'LIGHT'
 };
 
 export class LogicCircuit {
@@ -236,6 +240,13 @@ export class LogicCircuit {
             case GateTypes.xnor:
                 this.gates.set(id, new XnorGate(id));
                 return this.gates.get(id);
+            case GateTypes.bulb:
+                // bulb acts like a probe/terminal that reflects its input
+                class LightGate extends LogicGate {
+                    constructor(id) { super('LIGHT', id); }
+                }
+                this.gates.set(id, new LightGate(id));
+                return this.gates.get(id);
             default:
                 console.log("Incorrect gate type provided!");
                 return null;
@@ -249,6 +260,25 @@ export class LogicCircuit {
         }
 
         return true;
+    }
+
+    /**
+     * Connect source -> destination using an explicit input index on the destination.
+     * Returns true on success, false on failure.
+     */
+    connectGatesWithIndex(gate_source_id, gate_destination_id, inputIndex) {
+        try {
+            const src = this.gates.get(gate_source_id);
+            const dst = this.gates.get(gate_destination_id);
+            if (!src || !dst) return false;
+            if (src.connectTo(dst, inputIndex)) {
+                return false;
+            }
+            return true;
+        } catch (err) {
+            console.error('connectGatesWithIndex error', err);
+            return false;
+        }
     }
     
     getGate(id) {

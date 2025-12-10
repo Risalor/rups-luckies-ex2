@@ -16,6 +16,8 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
     preload() {
         // reuse the component gate icon for all gates for now
         this.load.image('gateIcon', 'src/components/GateIco.png');
+        // lamp icon for bulb probe
+        this.load.image('lamp', 'src/components/lamp.png');
     }
 
     create() {
@@ -54,7 +56,8 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
             { key: 'nand', label: 'NAND' },
             { key: 'nor', label: 'NOR' },
             { key: 'xor', label: 'XOR' },
-            { key: 'xnor', label: 'XNOR' }
+            { key: 'xnor', label: 'XNOR' },
+            { key: 'bulb', label: 'Bulb' }
         ];
 
         // move sprites down a bit so they don't overlap the title
@@ -68,6 +71,23 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
         // bottom status text: always black for readability
         this.checkText = this.add.text(width / 2, height - 70, '', { fontSize: '18px', color: '#000000', fontStyle: 'bold', padding: { x: 15, y: 8 } }).setOrigin(0.5);
 
+        // Tasks for logic gates workspace (simple progression)
+        this.tasks = [
+            { id: 'and_task', prompt: 'Naloga 1: Sestavi vezje, kjer izhod AND vrati pravo vrednost (poveži AND z Bulb).', gateType: 'AND', points: 10, completed: false },
+            { id: 'or_task', prompt: 'Naloga 2: Sestavi vezje, kjer izhod OR vrne pravo vrednost (poveži OR z Bulb).', gateType: 'OR', points: 10, completed: false }
+        ];
+        const savedTaskIndex = localStorage.getItem('logicTasksIndex');
+        this.currentTaskIndex = savedTaskIndex !== null ? parseInt(savedTaskIndex) : 0;
+
+    // Task UI tab (persistent until task completed)
+    const taskBoxWidth = Math.min(420, width - panelWidth - 80);
+    const taskBoxHeight = 80;
+    const taskBoxX = panelWidth + 20;
+    const taskBoxY = 20;
+    this.taskBox = this.add.rectangle(taskBoxX, taskBoxY, taskBoxWidth, taskBoxHeight, 0x222222, 0.95).setOrigin(0, 0).setDepth(1000);
+    this.taskBox.setStrokeStyle(2, 0xffffff);
+    this.taskText = this.add.text(taskBoxX + 10, taskBoxY + 10, this.tasks[this.currentTaskIndex].prompt, { fontSize: '14px', color: '#ffffff', wordWrap: { width: taskBoxWidth - 20 } }).setDepth(1001).setOrigin(0,0);
+
         const buttonWidth = 180;
         const buttonHeight = 45;
         const cornerRadius = 10;
@@ -78,6 +98,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
             const hoverColor = 0x0f5cad;
             const activeColor = opts.activeColor || null;
 
+            // helper: draw the rounded rect background
             const drawBg = (color) => {
                 bg.clear();
                 bg.fillStyle(color, 1);
@@ -88,12 +109,30 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
 
             const button = { bg, active: false, activeColor };
 
-            const text = this.add.text(x, y, label, { fontFamily: 'Arial', fontSize: '20px', color: '#ffffff' }).setOrigin(0.5)
+            // helper to produce a slightly darker/lighter shade of a hex color (number)
+            const shadeColor = (hex, factor) => {
+                if (hex == null) return null;
+                const h = typeof hex === 'number' ? hex : parseInt(hex);
+                const r = Math.min(255, Math.max(0, Math.round(((h >> 16) & 0xff) * factor)));
+                const g = Math.min(255, Math.max(0, Math.round(((h >> 8) & 0xff) * factor)));
+                const b = Math.min(255, Math.max(0, Math.round((h & 0xff) * factor)));
+                return (r << 16) | (g << 8) | b;
+            };
+
+            // compute a hover shade for activeColor (slightly darker)
+            const activeHoverColor = activeColor ? shadeColor(activeColor, 0.85) : null;
+
+            // Create an invisible interactive zone that covers the entire button
+            const hitZone = this.add.zone(x, y, buttonWidth, buttonHeight)
+                .setOrigin(0.5)
                 .setInteractive({ useHandCursor: true })
                 .on('pointerover', () => {
-                    drawBg(button.active && button.activeColor ? button.activeColor : hoverColor);
+                    // always show a hover effect; if active, use the activeHoverColor when available
+                    const hover = (button.active && button.activeColor) ? (activeHoverColor || hoverColor) : hoverColor;
+                    drawBg(hover);
                 })
                 .on('pointerout', () => {
+                    // when leaving, restore active color if active, otherwise the default
                     drawBg(button.active && button.activeColor ? button.activeColor : defaultColor);
                 })
                 .on('pointerdown', () => {
@@ -102,7 +141,10 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                     }
                 });
 
+            const text = this.add.text(x, y, label, { fontFamily: 'Arial', fontSize: '20px', color: '#ffffff' }).setOrigin(0.5);
+
             button.text = text;
+            button.hitZone = hitZone;
             button.setActive = (isActive) => {
                 button.active = !!isActive;
                 drawBg(button.active && button.activeColor ? button.activeColor : defaultColor);
@@ -167,8 +209,10 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
         const container = this.add.container(x, y);
         // panel items default depth so connections draw above the grid but below placed gates
         container.setDepth(5);
-        const img = this.add.image(0, 0, 'gateIcon').setDisplaySize(64, 64).setOrigin(0.5);
-        container.add(img);
+    const img = this.add.image(0, 0, 'gateIcon').setDisplaySize(64, 64).setOrigin(0.5);
+    container.add(img);
+    // keep a reference to the image for easy updates (tint/texture)
+    container.setData('img', img);
 
         const label = this.add.text(0, 36, labelText || type, { fontSize: '12px', color: '#fff', backgroundColor: '#00000088', padding: { x: 4, y: 2 } }).setOrigin(0.5);
         container.add(label);
@@ -213,6 +257,30 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
         container.on('dragend', () => {
             const isInPanel = container.x < (this.gridStartX || 200);
             if (isInPanel && !container.getData('isInPanel')) {
+                // moved back into the sidebar: remove the placed gate and any connections
+                const gateId = container.getData('gateId');
+
+                // if this was the currently selected connecting source, clear it
+                if (this.connectingSource === container) this.connectingSource = null;
+
+                // remove any connection graphics that reference this gate
+                try {
+                    this.connections = this.connections.filter(conn => {
+                        if (conn.fromId === gateId || conn.toId === gateId) {
+                            try { if (conn.gfx) conn.gfx.destroy(); } catch (e) { /* ignore */ }
+                            try { if (conn.hitZone) conn.hitZone.destroy(); } catch (e) { /* ignore */ }
+                            return false; // remove this connection from the array
+                        }
+                        return true;
+                    });
+                } catch (e) { /* ignore */ }
+
+                // remove the gate from the logic circuit (disconnects underlying links)
+                try { if (this.logicCircuit && typeof this.logicCircuit.removeGate === 'function') this.logicCircuit.removeGate(gateId); } catch (e) { /* ignore */ }
+
+                // remove from placedComponents list
+                try { this.placedComponents = this.placedComponents.filter(c => c !== container); } catch (e) { /* ignore */ }
+
                 container.destroy();
             } else if (!isInPanel && container.getData('isInPanel')) {
                 const snapped = this.snapToGrid(container.x, container.y);
@@ -230,12 +298,16 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                     case 'nor': gateType = GateTypes.nor; break;
                     case 'xor': gateType = GateTypes.xor; break;
                     case 'xnor': gateType = GateTypes.xnor; break;
+                    case 'bulb': gateType = GateTypes.bulb; break;
                     default: gateType = GateTypes.and;
                 }
 
                 const gate = this.logicCircuit.addGate(gateType, id);
                 container.setData('logicGate', gate);
                 container.setData('gateId', id);
+                // store image and label refs for later updates
+                container.setData('img', img);
+                container.setData('labelTextObj', label);
 
                 // if it's an input gate, store its boolean value and update label
                 if (type === 'input') {
@@ -243,9 +315,144 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                     label.setText(`${labelText}\n1`);
                 }
 
+                // if it's a bulb, swap texture and default to 'off' tint
+                if (type === 'bulb') {
+                    try {
+                        img.setTexture('lamp').setDisplaySize(48, 48);
+                    } catch (e) {
+                        // ignore if texture missing
+                    }
+                    // show off by default
+                    img.setTint(0x666666);
+                    container.setData('isBulb', true);
+                }
+
                 container.setData('isInPanel', false);
                 // placed gates should be above connection graphics
                 container.setDepth(20);
+
+                // add explicit input/output pins for placed gates (visual + interactive)
+                const pinRadius = 6;
+                const imgObj = img; // image on container
+                // decide max inputs by type
+                let maxInputs = 2;
+                if (type === 'not' || type === 'bulb') maxInputs = 1;
+                if (type === 'input') maxInputs = 0; // input gates are sources only
+                // avoid creating pins twice if this container already has them
+                let inputPins = container.getData('inputPins') || [];
+                if (!inputPins || inputPins.length === 0) {
+                    inputPins = [];
+                    for (let i = 0; i < maxInputs; i++) {
+                    const yOff = (maxInputs === 1) ? 0 : (i === 0 ? -10 : 10);
+                    const inPin = this.add.circle(-36, yOff, pinRadius, 0x000000).setStrokeStyle(2, 0xffffff).setOrigin(0.5);
+                    inPin.setInteractive({ useHandCursor: true });
+                    // prevent container pointerdown when pin clicked
+                    inPin.on('pointerdown', (pointer, localX, localY, event) => {
+                        if (event && event.stopPropagation) event.stopPropagation();
+                        if (!this.connectMode) return;
+                        // if no connecting source, nothing to do
+                        if (!this.connectingSource) return;
+                        const sourceContainer = this.connectingSource;
+                        const sourceId = sourceContainer.getData('gateId');
+                        const targetId = container.getData('gateId');
+                        if (!sourceId || !targetId) return;
+
+                        // ensure direction is output->input (source cannot be an input gate)
+                        if (sourceContainer.getData('type') === 'input' && container.getData('type') === 'input') {
+                            this.checkText.setText('Ne morete povezati dveh Input vrat');
+                            this.time.delayedCall(1200, () => this.checkText.setText(''));
+                            // clear highlight on source
+                            const srcImg = sourceContainer.getData('img'); if (srcImg && srcImg.clearTint) srcImg.clearTint();
+                            this.connectingSource = null;
+                            return;
+                        }
+
+                        // find which input index this pin corresponds to
+                        const toPinIndex = inputPins.indexOf(inPin);
+                        // check occupancy
+                        const targetGateObj = this.logicCircuit.getGate(targetId);
+                        if (targetGateObj && targetGateObj.inputGates[toPinIndex]) {
+                            this.checkText.setText('Ta vhod je že zaseden');
+                            this.time.delayedCall(1200, () => this.checkText.setText(''));
+                            // clear highlight
+                            const srcImg = sourceContainer.getData('img'); if (srcImg && srcImg.clearTint) srcImg.clearTint();
+                            this.connectingSource = null;
+                            return;
+                        }
+
+                        // attempt connection using explicit index
+                        let ok = false;
+                        try {
+                            ok = this.logicCircuit.connectGatesWithIndex(sourceId, targetId, toPinIndex);
+                        } catch (err) { console.error('connectWithIndex error', err); ok = false; }
+
+                        if (ok) {
+                            this.checkText.setText('Povezano');
+                            // draw a line between pins
+                            const fromX = sourceContainer.x + (sourceContainer.getData('outputPin') ? sourceContainer.getData('outputPin').x : 36);
+                            const fromY = sourceContainer.y + (sourceContainer.getData('outputPin') ? sourceContainer.getData('outputPin').y : 0);
+                            const toX = container.x + inPin.x;
+                            const toY = container.y + inPin.y;
+                            const gfx = this.add.graphics();
+                            gfx.lineStyle(4, 0x3333ff, 1);
+                            gfx.beginPath();
+                            gfx.moveTo(fromX, fromY);
+                            gfx.lineTo(toX, toY);
+                            gfx.strokePath();
+                            gfx.setDepth(10);
+
+                            // add a hit zone to allow removing the connection
+                            const dx = toX - fromX; const dy = toY - fromY; const dist = Math.hypot(dx, dy);
+                            const midX = fromX + dx / 2; const midY = fromY + dy / 2;
+                            const hit = this.add.zone(midX, midY, Math.max(30, dist), 16).setOrigin(0.5).setInteractive();
+                            // remove connection on click
+                            hit.on('pointerdown', () => {
+                                try {
+                                    const srcGate = this.logicCircuit.getGate(sourceId);
+                                    const dstGate = this.logicCircuit.getGate(targetId);
+                                    if (srcGate && dstGate) srcGate.disconnectFrom(dstGate);
+                                } catch (e) { /* ignore */ }
+                                try { gfx.destroy(); } catch (e) {}
+                                try { hit.destroy(); } catch (e) {}
+                                // remove from connections array
+                                this.connections = this.connections.filter(c => !(c.fromId === sourceId && c.toId === targetId && c.toPinIndex === toPinIndex));
+                            });
+
+                            this.connections.push({ fromId: sourceId, toId: targetId, fromPinIndex: 0, toPinIndex, gfx, hitZone: hit });
+                        } else {
+                            this.checkText.setText('Povezava ni mogoča');
+                        }
+
+                        // clear highlight and connecting state
+                        const srcImg = sourceContainer.getData('img'); if (srcImg && srcImg.clearTint) srcImg.clearTint();
+                        this.connectingSource = null;
+                        this.time.delayedCall(1200, () => this.checkText.setText(''));
+                    });
+                        container.add(inPin);
+                        inputPins.push(inPin);
+                    }
+                }
+
+                // output pin (if not an input-only gate)
+                let outputPin = container.getData('outputPin') || null;
+                // do NOT create an output pin for bulb probes — bulbs are terminals (inputs only)
+                if (type !== 'input' && type !== 'bulb' && !outputPin) {
+                    outputPin = this.add.circle(36, 0, pinRadius, 0x000000).setStrokeStyle(2, 0xffffff).setOrigin(0.5);
+                    outputPin.setInteractive({ useHandCursor: true });
+                    outputPin.on('pointerdown', (pointer, localX, localY, event) => {
+                        if (event && event.stopPropagation) event.stopPropagation();
+                        if (!this.connectMode) return;
+                        // start a connection from this gate's output
+                        this.connectingSource = container;
+                        const srcImg = container.getData('img'); if (srcImg && srcImg.setTint) srcImg.setTint(0x00ff00);
+                        this.checkText.setText('Izberi cilj za povezavo');
+                    });
+                    container.add(outputPin);
+                }
+
+                container.setData('inputPins', inputPins);
+                container.setData('outputPin', outputPin);
+
                 this.placedComponents.push(container);
 
                 // create a new panel copy
@@ -272,13 +479,13 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                     if (!this.connectingSource) {
                     this.connectingSource = container;
                     // highlight
-                    const imgChild = container.list.find(c => c.setTint);
-                    if (imgChild) imgChild.setTint(0x00ff00);
+                    const imgChild = container.getData('img');
+                    if (imgChild && imgChild.setTint) imgChild.setTint(0x00ff00);
                     this.checkText.setText('Izberi cilj za povezavo');
                 } else if (this.connectingSource === container) {
                     // deselect
-                    const imgChild = container.list.find(c => c.clearTint);
-                    if (imgChild) imgChild.clearTint();
+                    const imgChild = container.getData('img');
+                    if (imgChild && imgChild.clearTint) imgChild.clearTint();
                     this.connectingSource = null;
                     this.checkText.setText('');
                 } else {
@@ -296,12 +503,37 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                         if (sourceType === 'input' && targetType === 'input') {
                             this.checkText.setText('Ne morete povezati dveh Input vrat');
                             // clear highlight
-                            const imgChildErr = this.connectingSource.list.find(c => c.clearTint);
-                            if (imgChildErr) imgChildErr.clearTint();
+                            const imgChildErr = this.connectingSource.getData('img');
+                            if (imgChildErr && imgChildErr.clearTint) imgChildErr.clearTint();
                             this.connectingSource = null;
                             this.time.delayedCall(1200, () => this.checkText.setText(''));
                             return;
                         }
+                        // prevent connecting if target already has max inputs
+                        try {
+                            const targetGateObj = this.logicCircuit.getGate(targetId);
+                            const currentInputs = (targetGateObj && targetGateObj.inputGates) ? targetGateObj.inputGates.filter(Boolean).length : 0;
+                            if (targetType === 'bulb' && currentInputs >= 1) {
+                                this.checkText.setText('Svetilka lahko sprejme le eno povezavo');
+                                const imgChildErr = this.connectingSource.getData('img');
+                                if (imgChildErr && imgChildErr.clearTint) imgChildErr.clearTint();
+                                this.connectingSource = null;
+                                this.time.delayedCall(1200, () => this.checkText.setText(''));
+                                return;
+                            }
+                            // general gates: limit to 2 inputs
+                            if (targetType !== 'input' && targetType !== 'bulb' && currentInputs >= 2) {
+                                this.checkText.setText('Vrata lahko imajo največ 2 vhoda');
+                                const imgChildErr = this.connectingSource.getData('img');
+                                if (imgChildErr && imgChildErr.clearTint) imgChildErr.clearTint();
+                                this.connectingSource = null;
+                                this.time.delayedCall(1200, () => this.checkText.setText(''));
+                                return;
+                            }
+                        } catch (err) {
+                            console.error('error checking target inputs', err);
+                        }
+
                         let ok = false;
                         try {
                             ok = this.logicCircuit.connectGates(sourceId, targetId);
@@ -312,23 +544,58 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
 
                         if (ok) {
                             this.checkText.setText('Povezano');
-                            // draw a line between gates
+                            // determine a reasonable input index on the target (first free slot)
+                            let toPinIndex = 0;
+                            try {
+                                const targetGateObj = this.logicCircuit.getGate(targetId);
+                                if (targetGateObj) {
+                                    const freeIdx = targetGateObj.inputGates.findIndex(v => !v && v !== undefined);
+                                    if (freeIdx !== -1) toPinIndex = freeIdx;
+                                    else toPinIndex = targetGateObj.inputGates.length;
+                                }
+                            } catch (e) { /* ignore */ }
+
+                            // draw a line between containers (if pins exist prefer their positions)
+                            const fromContainer = this.connectingSource;
+                            const fromPin = fromContainer.getData('outputPin');
+                            const toContainer = container;
+                            const toPins = toContainer.getData('inputPins') || [];
+                            const fromX = fromContainer.x + (fromPin ? fromPin.x : 36);
+                            const fromY = fromContainer.y + (fromPin ? fromPin.y : 0);
+                            const toX = toContainer.x + (toPins[toPinIndex] ? toPins[toPinIndex].x : 0);
+                            const toY = toContainer.y + (toPins[toPinIndex] ? toPins[toPinIndex].y : 0);
+
                             const gfx = this.add.graphics();
                             gfx.lineStyle(4, 0x3333ff, 1);
                             gfx.beginPath();
-                            gfx.moveTo(this.connectingSource.x, this.connectingSource.y);
-                            gfx.lineTo(container.x, container.y);
+                            gfx.moveTo(fromX, fromY);
+                            gfx.lineTo(toX, toY);
                             gfx.strokePath();
-                            // connection graphics should sit below placed gates but above grid
                             gfx.setDepth(10);
-                            this.connections.push({ fromId: sourceId, toId: targetId, gfx });
+
+                            // add hit zone for removal
+                            const dx = toX - fromX; const dy = toY - fromY; const dist = Math.hypot(dx, dy);
+                            const midX = fromX + dx / 2; const midY = fromY + dy / 2;
+                            const hit = this.add.zone(midX, midY, Math.max(30, dist), 16).setOrigin(0.5).setInteractive();
+                            hit.on('pointerdown', () => {
+                                try {
+                                    const srcGate = this.logicCircuit.getGate(sourceId);
+                                    const dstGate = this.logicCircuit.getGate(targetId);
+                                    if (srcGate && dstGate) srcGate.disconnectFrom(dstGate);
+                                } catch (e) { /* ignore */ }
+                                try { gfx.destroy(); } catch (e) {}
+                                try { hit.destroy(); } catch (e) {}
+                                this.connections = this.connections.filter(c => !(c.fromId === sourceId && c.toId === targetId && c.toPinIndex === toPinIndex));
+                            });
+
+                            this.connections.push({ fromId: sourceId, toId: targetId, fromPinIndex: 0, toPinIndex, gfx, hitZone: hit });
                         } else {
                             this.checkText.setText('Povezava ni mogoča');
                         }
                     }
                     // clear highlight
-                    const imgChild = this.connectingSource.list.find(c => c.clearTint);
-                    if (imgChild) imgChild.clearTint();
+                    const imgChild = this.connectingSource.getData('img');
+                    if (imgChild && imgChild.clearTint) imgChild.clearTint();
                     this.connectingSource = null;
                     this.time.delayedCall(1200, () => this.checkText.setText(''));
                 }
@@ -374,6 +641,81 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
         const toShow = Object.keys(endResults).length > 0 ? endResults : resultsFull;
         this.checkText.setText('Evaluated: ' + JSON.stringify(toShow));
         this.time.delayedCall(4000, () => this.checkText.setText(''));
+
+        // Update any bulb visuals based on their gate outputs
+        try {
+            this.placedComponents.forEach(c => {
+                if (c.getData('isBulb')) {
+                    const gate = c.getData('logicGate');
+                    const img = c.getData('img');
+                    if (gate && img) {
+                        const val = !!gate.getOutput();
+                        if (val) {
+                            // on: bright yellow
+                            img.setTint(0xffff66);
+                        } else {
+                            // off: dim gray
+                            img.setTint(0x666666);
+                        }
+                    }
+                }
+            });
+        } catch (e) {
+            // ignore visual update errors
+        }
+
+        // after evaluating, also check current task completion
+        try {
+            this.checkCurrentTaskCompletion();
+        } catch (e) { /* ignore */ }
+    }
+
+    checkCurrentTaskCompletion() {
+        if (!this.tasks || this.currentTaskIndex == null) return;
+        const task = this.tasks[this.currentTaskIndex];
+        if (!task) return;
+
+        // we look for a bulb (LIGHT) whose input comes from a gate of required type
+        for (const [id, gate] of this.logicCircuit.gates) {
+            if (gate.operation === 'LIGHT') {
+                const src = gate.inputGates[0];
+                if (!src) continue;
+                if (src.operation === task.gateType) {
+                    // ensure the source gate has at least two inputs for AND/OR tasks (except NOT)
+                    const numInputs = src.inputGates ? src.inputGates.filter(Boolean).length : 0;
+                    if (task.gateType === 'NOT' || task.gateType === 'BUFFER' || numInputs >= 1) {
+                        // mark completed
+                        task.completed = true;
+                        this.checkText.setText('Naloga opravljena!');
+                        this.addPoints(task.points);
+                        this.time.delayedCall(1500, () => this.nextTask());
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    nextTask() {
+        this.currentTaskIndex++;
+        localStorage.setItem('logicTasksIndex', this.currentTaskIndex.toString());
+        if (this.currentTaskIndex < this.tasks.length) {
+            this.taskText.setText(this.tasks[this.currentTaskIndex].prompt);
+        } else {
+            this.taskText.setText('Vse naloge opravljene! Bravo!');
+            // clear saved index
+            localStorage.removeItem('logicTasksIndex');
+        }
+    }
+
+    addPoints(points) {
+        const user = localStorage.getItem('username');
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const userData = users.find(u => u.username === user);
+        if (userData) {
+            userData.score = (userData.score || 0) + points;
+        }
+        localStorage.setItem('users', JSON.stringify(users));
     }
 
     resetWorkspace() {
@@ -384,6 +726,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
         if (this.connections && this.connections.length > 0) {
             this.connections.forEach(conn => {
                 try { if (conn.gfx) conn.gfx.destroy(); } catch (e) { /* ignore */ }
+                try { if (conn.hitZone) conn.hitZone.destroy(); } catch (e) { /* ignore */ }
             });
         }
         this.connections = [];
@@ -400,12 +743,29 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                 const fromContainer = this.placedComponents.find(c => c.getData('gateId') === conn.fromId);
                 const toContainer = this.placedComponents.find(c => c.getData('gateId') === conn.toId);
                 if (fromContainer && toContainer && conn.gfx) {
+                    // compute endpoints using pin positions if available
+                    const fromPin = fromContainer.getData('outputPin');
+                    const toPins = toContainer.getData('inputPins') || [];
+                    const fromX = fromContainer.x + (fromPin ? fromPin.x : 36);
+                    const fromY = fromContainer.y + (fromPin ? fromPin.y : 0);
+                    const toPinObj = toPins[conn.toPinIndex];
+                    const toX = toContainer.x + (toPinObj ? toPinObj.x : 0);
+                    const toY = toContainer.y + (toPinObj ? toPinObj.y : 0);
+
                     conn.gfx.clear();
                     conn.gfx.lineStyle(4, 0x3333ff, 1);
                     conn.gfx.beginPath();
-                    conn.gfx.moveTo(fromContainer.x, fromContainer.y);
-                    conn.gfx.lineTo(toContainer.x, toContainer.y);
+                    conn.gfx.moveTo(fromX, fromY);
+                    conn.gfx.lineTo(toX, toY);
                     conn.gfx.strokePath();
+
+                    // update hitZone position/size if present
+                    if (conn.hitZone) {
+                        const dx = toX - fromX; const dy = toY - fromY; const dist = Math.hypot(dx, dy);
+                        const midX = fromX + dx / 2; const midY = fromY + dy / 2;
+                        conn.hitZone.setPosition(midX, midY);
+                        conn.hitZone.setSize(Math.max(30, dist), 16);
+                    }
                 }
             }
         });
