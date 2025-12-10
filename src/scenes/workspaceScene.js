@@ -59,6 +59,15 @@ export default class WorkspaceScene extends Phaser.Scene {
     this.infoWindow.setDepth(1000);
     this.infoWindow.setVisible(false);
 
+    // dot textura za animacjo toka
+    const flowGfx = this.add.graphics();
+    flowGfx.fillStyle(0xffff66, 1); 
+    flowGfx.fillCircle(4, 4, 4);
+    flowGfx.generateTexture("flow-dot", 8, 8);
+    flowGfx.destroy();
+
+    this.currentFlows = [];
+
     // ozadje info okna
     const infoBox = this.add.rectangle(0, 0, 200, 80, 0x2c2c2c, 0.95);
     infoBox.setStrokeStyle(2, 0xffffff);
@@ -411,14 +420,12 @@ export default class WorkspaceScene extends Phaser.Scene {
     const comp = component.getData("logicComponent");
     if (!comp) return;
 
-    // derive local offsets: prefer comp-local offsets, else use half display
     const halfW = 40;
     const halfH = 40;
 
     const localStart = comp.localStart || { x: -halfW, y: 0 };
     const localEnd = comp.localEnd || { x: halfW, y: 0 };
 
-    // get container angle in radians (Phaser keeps both .angle and .rotation)
     const theta =
       typeof component.rotation === "number" && component.rotation
         ? component.rotation
@@ -470,6 +477,132 @@ export default class WorkspaceScene extends Phaser.Scene {
       endDot.x = comp.end.x;
       endDot.y = comp.end.y;
     }
+  }
+
+  cleanupFlows() {
+    if (!this.currentFlows) return;
+    for (const item of this.currentFlows) {
+      try {
+        if (item.follower && item.follower.stopFollow)
+          item.follower.stopFollow();
+        if (item.follower && item.follower.destroy) item.follower.destroy();
+        if (item.sprite && item.sprite.destroy) item.sprite.destroy();
+      } catch (e) {
+      }
+    }
+    this.currentFlows = [];
+  }
+
+  startFlows(paths = []) {
+    this.cleanupFlows();
+    if (!paths || paths.length === 0) return;
+
+    const baseSpeedPxPerSec = 160; 
+    const minDots = 2;
+    const maxDots = 20; 
+
+    for (const pathNodes of paths) {
+      if (!pathNodes || pathNodes.length < 2) continue;
+
+      const detailedPoints = [];
+      for (let i = 0; i < pathNodes.length; i++) {
+        const current = { x: pathNodes[i].x, y: pathNodes[i].y };
+        detailedPoints.push(current);
+
+        if (i < pathNodes.length - 1) {
+          const next = { x: pathNodes[i + 1].x, y: pathNodes[i + 1].y };
+          const dx = next.x - current.x;
+          const dy = next.y - current.y;
+          const dist = Math.hypot(dx, dy);
+
+          const segmentCount = Math.ceil(dist / 20);
+          for (let j = 1; j < segmentCount; j++) {
+            const t = j / segmentCount;
+            detailedPoints.push({
+              x: Math.round(current.x + dx * t),
+              y: Math.round(current.y + dy * t),
+            });
+          }
+        }
+      }
+
+      let totalDist = 0;
+      for (let i = 0; i < detailedPoints.length - 1; i++) {
+        const dx = detailedPoints[i + 1].x - detailedPoints[i].x;
+        const dy = detailedPoints[i + 1].y - detailedPoints[i].y;
+        totalDist += Math.hypot(dx, dy);
+      }
+      if (totalDist === 0) continue;
+
+      const count = Math.min(
+        maxDots,
+        Math.max(minDots, Math.ceil(totalDist / 120))
+      ); 
+
+      const curve = new Phaser.Curves.Path(
+        detailedPoints[0].x,
+        detailedPoints[0].y
+      );
+      for (let i = 1; i < detailedPoints.length; i++) {
+        curve.lineTo(detailedPoints[i].x, detailedPoints[i].y);
+      }
+
+      const duration = Math.max(200, (totalDist / baseSpeedPxPerSec) * 1000);
+
+      for (let i = 0; i < count; i++) {
+        const sprite = this.add.follower(
+          curve,
+          detailedPoints[0].x,
+          detailedPoints[0].y,
+          "flow-dot"
+        );
+        sprite.setDepth(1500); 
+        const delay = Math.round((i / count) * duration);
+
+        sprite.startFollow({
+          duration,
+          repeat: -1,
+          yoyo: false,
+          rotateToPath: false,
+          delay,
+        });
+
+        this.currentFlows.push({ follower: sprite, sprite });
+      }
+    }
+  }
+
+  updateBulbsAndFlows() {
+    const simResult = this.graph.simulate();
+    this.sim = simResult === 1;
+
+    this.placedComponents.forEach((c) => {
+      const logic = c.getData("logicComponent");
+      if (!logic) return;
+      if (logic.type === "bulb") {
+        const img = c.list && c.list[0];
+        if (img && img.setTexture) {
+          try {
+            img.setTexture(this.sim ? "svetilka-on" : "svetilka");
+          } catch (e) {
+          }
+        }
+      }
+    });
+
+    const battery = this.graph.components.find((cc) => cc.type === "battery");
+    if (this.sim && battery) {
+      const paths = this.graph.getConductivePaths(
+        battery.start,
+        battery.end,
+        4
+      );
+      this.startFlows(paths);
+    } else {
+      this.cleanupFlows();
+    }
+
+    return simResult;
   }
 
   createComponent(x, y, type, color) {
@@ -705,15 +838,15 @@ export default class WorkspaceScene extends Phaser.Scene {
           this.graph.removeComponent(comp);
         }
 
-        // Make the visual non-interactive immediately to stop further input events
         component.disableInteractive();
         component.setVisible(false);
         this.trash.setAlpha(0.5);
 
-        // Delay destruction until after Phaser's input update loop finishes
         this.time.delayedCall(30, () => {
           if (component && component.destroy) component.destroy();
         });
+
+        this.updateBulbsAndFlows();
 
         return;
       }
@@ -753,6 +886,7 @@ export default class WorkspaceScene extends Phaser.Scene {
         );
 
         this.placedComponents.push(component);
+        this.updateBulbsAndFlows();
       } else if (!component.getData("isInPanel")) {
         // na mizi in se postavi na mrežo
         const snapped = this.snapToGrid(component.x, component.y);
@@ -760,6 +894,7 @@ export default class WorkspaceScene extends Phaser.Scene {
         component.y = snapped.y;
 
         this.updateLogicNodePositions(component);
+        this.updateBulbsAndFlows();
       } else {
         // postavi se nazaj na originalno mesto
         component.x = component.getData("originalX");
@@ -799,8 +934,7 @@ export default class WorkspaceScene extends Phaser.Scene {
         }
 
         // re-run simulacijo
-        const simResult = this.graph.simulate();
-        this.sim = simResult === 1;
+        this.updateBulbsAndFlows();
 
         return;
       }
@@ -822,6 +956,7 @@ export default class WorkspaceScene extends Phaser.Scene {
           ease: "Cubic.easeOut",
           onComplete: () => {
             this.updateLogicNodePositions(component);
+            this.updateBulbsAndFlows();
           },
         });
 
@@ -961,8 +1096,15 @@ export default class WorkspaceScene extends Phaser.Scene {
         this.continueButton.setStyle({ color: "#0066ff" })
       )
       .on("pointerdown", () => {
+        this.cleanupFlows();
         this.hideTheory();
-        this.placedComponents.forEach((comp) => comp.destroy());
+        this.placedComponents.forEach((comp) => {
+          const logic = comp.getData("logicComponent");
+          if (logic && typeof this.graph.removeComponent === "function") {
+            this.graph.removeComponent(logic);
+          }
+          comp.destroy();
+        });
         this.placedComponents = [];
         this.nextChallenge();
       });

@@ -9,7 +9,7 @@ class CircuitGraph {
     if (!node) return null;
     if (!node.connected) node.connected = new Set();
 
-    // ce obstaja node z istem id updataj koordinate in vrni 
+    // ce obstaja node z istem id updataj koordinate in vrni
     const byId = this.nodes.get(node.id);
     if (byId) {
       byId.x = node.x;
@@ -104,6 +104,44 @@ class CircuitGraph {
         }
       }
     }
+  }
+
+  getConductivePaths(start, end, maxPaths = 4) {
+    if (!start || !end) return [];
+
+    const paths = [];
+    const visitedNodes = new Set();
+
+    const dfs = (node, pathNodes) => {
+      if (paths.length >= maxPaths) return;
+      visitedNodes.add(node);
+
+      // appenda node na current path copy
+      const newPath = [...pathNodes, node];
+
+      if (this.sameNode(node, end) && newPath.length > 1) {
+        paths.push(newPath);
+        visitedNodes.delete(node);
+        return;
+      }
+
+      for (const comp of this.getConnections(node)) {
+        if (!this.componentConducts(comp)) continue;
+
+        // najde sosednji node
+        const next = this.sameNode(comp.start, node) ? comp.end : comp.start;
+        if (!next) continue;
+        if (visitedNodes.has(next)) continue;
+
+        dfs(next, newPath);
+        if (paths.length >= maxPaths) break;
+      }
+
+      visitedNodes.delete(node);
+    };
+
+    dfs(start, []);
+    return paths;
   }
 
   addComponent(component) {
