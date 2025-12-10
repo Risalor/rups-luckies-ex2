@@ -32,13 +32,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
         this.add.rectangle(0, 0, width, height, 0xe0c9a6).setOrigin(0);
         this.createGrid();
 
-        // info window
-        this.infoWindow = this.add.container(0, 0).setDepth(1000).setVisible(false);
-        const infoBox = this.add.rectangle(0, 0, 260, 120, 0x222222, 0.9).setOrigin(0);
-        infoBox.setStrokeStyle(2, 0xffffff);
-        const infoText = this.add.text(10, 10, '', { fontSize: '14px', color: '#ffffff', wordWrap: { width: 240 } });
-        this.infoWindow.add([infoBox, infoText]);
-        this.infoText = infoText;
+    // info window removed — hover tooltips intentionally disabled
 
         // sidebar (styled like workspaceScene)
         const panelWidth = 200;
@@ -70,6 +64,45 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
         // controls (use same button style as WorkspaceScene)
         // bottom status text: always black for readability
         this.checkText = this.add.text(width / 2, height - 70, '', { fontSize: '18px', color: '#000000', fontStyle: 'bold', padding: { x: 15, y: 8 } }).setOrigin(0.5);
+        // override setText to allow suppressing only clears (empty-string sets)
+        this._origCheckTextSet = this.checkText.setText.bind(this.checkText);
+        this._suppressCheckTextClear = false;
+        this._suppressCheckTextClearUntil = 0;
+        this._checkTextTimer = null;
+        // helper to show a status line with color and auto-clear that respects suppression window
+        this.showStatus = (text, color = '#000000', holdMs = 2000) => {
+            try { if (this._checkTextTimer && this._checkTextTimer.remove) this._checkTextTimer.remove(false); } catch (e) {}
+            try { this.checkText.setStyle({ color }); } catch (e) {}
+            try { this._origCheckTextSet(text); } catch (e) {}
+            // compute delay: if suppression-until exists and is in future, ensure we hold until then
+            let delay = holdMs;
+            try {
+                if (this._suppressCheckTextClearUntil && this._suppressCheckTextClearUntil > Date.now()) {
+                    const remaining = this._suppressCheckTextClearUntil - Date.now();
+                    delay = Math.max(delay, remaining + 50);
+                }
+            } catch (e) {}
+            try {
+                this._checkTextTimer = this.time.delayedCall(delay, () => {
+                    try { this._origCheckTextSet(''); } catch (e) {}
+                    try { this.checkText.setStyle({ color: '#000000' }); } catch (e) {}
+                    this._checkTextTimer = null;
+                });
+            } catch (e) {}
+        };
+        this.checkText.setText = (txt) => {
+            try {
+                if (txt === '' && this._suppressCheckTextClear) {
+                    // ignore clears while suppression active
+                    return this.checkText;
+                }
+            } catch (e) { /* ignore */ }
+            return this._origCheckTextSet(txt), this.checkText;
+        };
+
+    // track used numeric indices for Inputs and Bulbs so we can reuse freed numbers
+    this.inputIndices = new Set();
+    this.bulbIndices = new Set();
 
         // Tasks for logic gates workspace (simple progression)
         this.tasks = [
@@ -154,7 +187,21 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
         };
 
         makeButton(width - 140, 75, 'Lestvica', () => this.scene.start('ScoreboardScene'));
-        makeButton(width - 140, 125, 'Preveri', () => this.evaluateCircuit());
+        makeButton(width - 140, 125, 'Preveri', () => {
+            // temporarily suppress clears to keep completion text visible
+            this._suppressCheckTextClear = true;
+            this._suppressCheckTextClearUntil = Date.now() + 3000;
+            // release suppression after a short grace period
+            this.time.delayedCall(3000, () => { this._suppressCheckTextClear = false; this._suppressCheckTextClearUntil = 0; });
+
+            // ensure connect mode is turned off before evaluating so UI/text doesn't disappear
+            if (this.connectMode) {
+                this.connectMode = false;
+                try { if (connectBtn && connectBtn.setActive) connectBtn.setActive(false); } catch (e) {}
+                // don't clear checkText here; suppression will prevent accidental clears
+            }
+            this.evaluateCircuit();
+        });
         makeButton(width - 140, 175, 'Reset', () => this.resetWorkspace());
         // Povezi button toggles connect mode
         let connectBtn = makeButton(width - 140, 225, 'Povezi', () => {
@@ -169,6 +216,8 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
             .on('pointerover', () => backButton.setStyle({ color: '#0054fdff' }))
             .on('pointerout', () => backButton.setStyle({ color: '#387affff' }))
             .on('pointerdown', () => {
+                // reset workspace counters and state when leaving
+                try { this.resetWorkspace(); } catch (e) { /* ignore */ }
                 this.cameras.main.fade(300, 0, 0, 0);
                 this.time.delayedCall(300, () => { this.scene.start('LabScene'); });
             });
@@ -228,27 +277,9 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
 
         this.input.setDraggable(container);
 
-        container.on('pointerover', () => {
-            if (container.getData('isInPanel')) {
-                this.infoText.setText(`${type.toUpperCase()}\nDrag to place`);
-                this.infoWindow.x = x + 120;
-                this.infoWindow.y = y - 10;
-                this.infoWindow.setVisible(true);
-            } else {
-                const gate = container.getData('logicGate');
-                if (gate) this.infoText.setText(JSON.stringify(gate.getInfo(), null, 2));
-                this.infoWindow.x = container.x + 20;
-                this.infoWindow.y = container.y - 40;
-                this.infoWindow.setVisible(true);
-            }
-            container.setScale(1.05);
-        });
-
-        container.on('pointerout', () => {
-            if (container.getData('isInPanel')) this.infoWindow.setVisible(false);
-            else this.infoWindow.setVisible(false);
-            container.setScale(1);
-        });
+        // hover handlers removed — no tooltip or hover box
+        container.on('pointerover', () => {});
+        container.on('pointerout', () => {});
 
         container.on('dragstart', () => { container.setData('isDragging', true); });
 
@@ -281,6 +312,19 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                 // remove from placedComponents list
                 try { this.placedComponents = this.placedComponents.filter(c => c !== container); } catch (e) { /* ignore */ }
 
+                // free any used numeric index for inputs/bulbs
+                try {
+                    const name = container.getData('displayName');
+                    const idx = container.getData('displayIndex');
+                    const t = container.getData('type');
+                    if (t === 'input' && typeof idx === 'number') {
+                        try { this.inputIndices.delete(idx); } catch (e) {}
+                    }
+                    if (t === 'bulb' && typeof idx === 'number') {
+                        try { this.bulbIndices.delete(idx); } catch (e) {}
+                    }
+                } catch (e) { /* ignore */ }
+
                 container.destroy();
             } else if (!isInPanel && container.getData('isInPanel')) {
                 const snapped = this.snapToGrid(container.x, container.y);
@@ -309,10 +353,18 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                 container.setData('img', img);
                 container.setData('labelTextObj', label);
 
-                // if it's an input gate, store its boolean value and update label
+                // if it's an input gate, store its boolean value, assign a display name (Input1, Input2...), and update label
                 if (type === 'input') {
                     container.setData('inputValue', true);
-                    label.setText(`${labelText}\n1`);
+                    // find smallest free index
+                    let idx = 1;
+                    while (this.inputIndices.has(idx)) idx++;
+                    this.inputIndices.add(idx);
+                    const inputName = `Input${idx}`;
+                    container.setData('displayName', inputName);
+                    container.setData('displayIndex', idx);
+                    // show initial boolean value as true/false
+                    label.setText(`${inputName} = true`);
                 }
 
                 // if it's a bulb, swap texture and default to 'off' tint
@@ -325,6 +377,15 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                     // show off by default
                     img.setTint(0x666666);
                     container.setData('isBulb', true);
+                    // assign a human-friendly incremental name for placed bulbs
+                    // find smallest free bulb index
+                    let bidx = 1;
+                    while (this.bulbIndices.has(bidx)) bidx++;
+                    this.bulbIndices.add(bidx);
+                    const displayName = `Bulb${bidx}`;
+                    label.setText(displayName);
+                    container.setData('displayName', displayName);
+                    container.setData('displayIndex', bidx);
                 }
 
                 container.setData('isInPanel', false);
@@ -360,7 +421,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                         // ensure direction is output->input (source cannot be an input gate)
                         if (sourceContainer.getData('type') === 'input' && container.getData('type') === 'input') {
                             this.checkText.setText('Ne morete povezati dveh Input vrat');
-                            this.time.delayedCall(1200, () => this.checkText.setText(''));
+                            this.time.delayedCall(1200, () => this._origCheckTextSet(''));
                             // clear highlight on source
                             const srcImg = sourceContainer.getData('img'); if (srcImg && srcImg.clearTint) srcImg.clearTint();
                             this.connectingSource = null;
@@ -373,7 +434,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                         const targetGateObj = this.logicCircuit.getGate(targetId);
                         if (targetGateObj && targetGateObj.inputGates[toPinIndex]) {
                             this.checkText.setText('Ta vhod je že zaseden');
-                            this.time.delayedCall(1200, () => this.checkText.setText(''));
+                            this.time.delayedCall(1200, () => this._origCheckTextSet(''));
                             // clear highlight
                             const srcImg = sourceContainer.getData('img'); if (srcImg && srcImg.clearTint) srcImg.clearTint();
                             this.connectingSource = null;
@@ -426,7 +487,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                         // clear highlight and connecting state
                         const srcImg = sourceContainer.getData('img'); if (srcImg && srcImg.clearTint) srcImg.clearTint();
                         this.connectingSource = null;
-                        this.time.delayedCall(1200, () => this.checkText.setText(''));
+                        this.time.delayedCall(1200, () => this._origCheckTextSet(''));
                     });
                         container.add(inPin);
                         inputPins.push(inPin);
@@ -487,7 +548,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                     const imgChild = container.getData('img');
                     if (imgChild && imgChild.clearTint) imgChild.clearTint();
                     this.connectingSource = null;
-                    this.checkText.setText('');
+                    this._origCheckTextSet('');
                 } else {
                     // attempt connection
                     const sourceId = this.connectingSource.getData('gateId');
@@ -506,7 +567,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                             const imgChildErr = this.connectingSource.getData('img');
                             if (imgChildErr && imgChildErr.clearTint) imgChildErr.clearTint();
                             this.connectingSource = null;
-                            this.time.delayedCall(1200, () => this.checkText.setText(''));
+                            this.time.delayedCall(1200, () => this._origCheckTextSet(''));
                             return;
                         }
                         // prevent connecting if target already has max inputs
@@ -518,7 +579,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                                 const imgChildErr = this.connectingSource.getData('img');
                                 if (imgChildErr && imgChildErr.clearTint) imgChildErr.clearTint();
                                 this.connectingSource = null;
-                                this.time.delayedCall(1200, () => this.checkText.setText(''));
+                                this.time.delayedCall(1200, () => this._origCheckTextSet(''));
                                 return;
                             }
                             // general gates: limit to 2 inputs
@@ -527,7 +588,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                                 const imgChildErr = this.connectingSource.getData('img');
                                 if (imgChildErr && imgChildErr.clearTint) imgChildErr.clearTint();
                                 this.connectingSource = null;
-                                this.time.delayedCall(1200, () => this.checkText.setText(''));
+                                this.time.delayedCall(1200, () => this._origCheckTextSet(''));
                                 return;
                             }
                         } catch (err) {
@@ -597,7 +658,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                     const imgChild = this.connectingSource.getData('img');
                     if (imgChild && imgChild.clearTint) imgChild.clearTint();
                     this.connectingSource = null;
-                    this.time.delayedCall(1200, () => this.checkText.setText(''));
+                    this.time.delayedCall(1200, () => this._origCheckTextSet(''));
                 }
                 return;
             }
@@ -612,9 +673,10 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                     const newVal = !current;
                     if (gate && gate.setValue) gate.setValue(newVal);
                     container.setData('inputValue', newVal);
-                    label.setText(`${labelText}\n${newVal ? '1' : '0'}`);
-                    this.checkText.setText(`Input ${container.getData('gateId')} = ${newVal ? '1' : '0'}`);
-                    this.time.delayedCall(1200, () => this.checkText.setText(''));
+                    const inputName = container.getData('displayName') || labelText || `Input`;
+                    label.setText(`${inputName} = ${newVal ? 'true' : 'false'}`);
+                    this.checkText.setText(`${inputName} = ${newVal ? 'true' : 'false'}`);
+                    this.time.delayedCall(1200, () => this._origCheckTextSet(''));
                 }
                 container.setData('lastClick', 0);
                 return;
@@ -638,11 +700,24 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
             }
         }
 
-        const toShow = Object.keys(endResults).length > 0 ? endResults : resultsFull;
-        this.checkText.setText('Evaluated: ' + JSON.stringify(toShow));
-        this.time.delayedCall(4000, () => this.checkText.setText(''));
+        // Build a simple bulb output summary (only bulbs) — use displayed names when possible
+        // We'll derive bulb outputs from placedComponents so we can show "Bulb1: true" etc.
+        const bulbEntries = [];
+        try {
+            (this.placedComponents || []).forEach(c => {
+                if (c.getData('isBulb')) {
+                    const name = c.getData('displayName') || c.getData('gateId') || 'Bulb';
+                    const gate = c.getData('logicGate');
+                    let val = false;
+                    try { val = !!(gate && gate.getOutput()); } catch (e) { val = false; }
+                    bulbEntries.push(`${name}: ${val ? 'true' : 'false'}`);
+                }
+            });
+        } catch (e) {
+            // ignore
+        }
 
-        // Update any bulb visuals based on their gate outputs
+        // Update bulb visuals
         try {
             this.placedComponents.forEach(c => {
                 if (c.getData('isBulb')) {
@@ -650,13 +725,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                     const img = c.getData('img');
                     if (gate && img) {
                         const val = !!gate.getOutput();
-                        if (val) {
-                            // on: bright yellow
-                            img.setTint(0xffff66);
-                        } else {
-                            // off: dim gray
-                            img.setTint(0x666666);
-                        }
+                        img.setTint(val ? 0xffff66 : 0x666666);
                     }
                 }
             });
@@ -664,10 +733,28 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
             // ignore visual update errors
         }
 
-        // after evaluating, also check current task completion
+        // Check current task completion (structural check)
+        let taskCompleted = false;
         try {
-            this.checkCurrentTaskCompletion();
+            taskCompleted = this.checkCurrentTaskCompletion();
         } catch (e) { /* ignore */ }
+
+    // Show concise bulb outputs and task status
+    const statusText = bulbEntries.length > 0 ? `Bulb outputs: ${bulbEntries.join(', ')}` : 'No bulbs present';
+
+        if (taskCompleted && this.tasks && this.tasks[this.currentTaskIndex] && !this.tasks[this.currentTaskIndex].completed) {
+            // award points and mark completed, then advance after a short delay
+            this.tasks[this.currentTaskIndex].completed = true;
+            this.addPoints(this.tasks[this.currentTaskIndex].points);
+            this.showStatus(`${statusText} — Naloga opravljena! (+${this.tasks[this.currentTaskIndex].points})`, '#00aa00', 2000);
+            this.time.delayedCall(1500, () => this.nextTask());
+        } else {
+            const taskMsg = (this.tasks && this.tasks[this.currentTaskIndex] && this.tasks[this.currentTaskIndex].completed) ? 'Naloga opravljena!' : 'Naloga ni opravljena';
+            const color = (taskMsg === 'Naloga opravljena!') ? '#00aa00' : '#cc0000';
+            this.showStatus(`${statusText} — ${taskMsg}`, color, 2000);
+            // reset color to black and clear text after a short delay (respect suppression)
+            try { this.time.delayedCall(2000, () => { try { this._origCheckTextSet(''); this.checkText.setStyle({ color: '#000000' }); } catch (e) {} }); } catch (e) {}
+        }
     }
 
     checkCurrentTaskCompletion() {
@@ -686,7 +773,7 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
                     if (task.gateType === 'NOT' || task.gateType === 'BUFFER' || numInputs >= 1) {
                         // mark completed
                         task.completed = true;
-                        this.checkText.setText('Naloga opravljena!');
+                        this.showStatus('Naloga opravljena!', '#00aa00', 2000);
                         this.addPoints(task.points);
                         this.time.delayedCall(1500, () => this.nextTask());
                         return;
@@ -703,6 +790,9 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
             this.taskText.setText(this.tasks[this.currentTaskIndex].prompt);
         } else {
             this.taskText.setText('Vse naloge opravljene! Bravo!');
+            // award a small completion bonus and show a congratulatory message
+            this.showStatus('Čestitke! Vse naloge opravljene!', '#00aa00', 3000);
+            try { this.addPoints(20); } catch (e) {}
             // clear saved index
             localStorage.removeItem('logicTasksIndex');
         }
@@ -732,8 +822,11 @@ export default class WorkspaceSceneLogicGates extends Phaser.Scene {
         this.connections = [];
         // reset logic circuit
         this.logicCircuit = new LogicCircuit();
-        this.checkText.setText('Workspace reset');
-        this.time.delayedCall(1500, () => this.checkText.setText(''));
+        // reset placement index trackers
+        try { this.inputIndices = new Set(); } catch (e) {}
+        try { this.bulbIndices = new Set(); } catch (e) {}
+        this._origCheckTextSet('Workspace reset');
+        this.time.delayedCall(1500, () => this._origCheckTextSet(''));
     }
 
     updateConnectionsForGate(gateId) {
