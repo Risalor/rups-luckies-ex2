@@ -123,19 +123,18 @@ export default class LoginScene extends Phaser.Scene {
         const cornerRadius = 10;  
         const buttonY = panelY + 270;
         const rectX = width / 2;
-        const buttonSpacing = 20;
 
         const loginButtonBg = this.add.graphics();
         loginButtonBg.fillStyle(0x3399ff, 1);
         loginButtonBg.fillRoundedRect(
-            rectX - buttonWidth - buttonSpacing / 2,
+            rectX - buttonWidth / 2,
             buttonY - buttonHeight / 2,
             buttonWidth,
             buttonHeight,
             cornerRadius
         );
 
-        const loginButton = this.add.text(rectX - buttonSpacing / 2 - buttonWidth / 2, buttonY, '▶ Prijavi se', {
+        const loginButton = this.add.text(rectX, buttonY, '▶ Prijavi se', {
             fontFamily: 'Arial',
             fontSize: '24px',
             color: '#ffffff'
@@ -146,7 +145,7 @@ export default class LoginScene extends Phaser.Scene {
                 loginButtonBg.clear();
                 loginButtonBg.fillStyle(0x0f5cad, 1);
                 loginButtonBg.fillRoundedRect(
-                    rectX - buttonWidth - buttonSpacing / 2,
+                    rectX - buttonWidth / 2,
                     buttonY - buttonHeight / 2,
                     buttonWidth,
                     buttonHeight,
@@ -157,7 +156,7 @@ export default class LoginScene extends Phaser.Scene {
                 loginButtonBg.clear();
                 loginButtonBg.fillStyle(0x3399ff, 1);
                 loginButtonBg.fillRoundedRect(
-                    rectX - buttonWidth - buttonSpacing / 2,
+                    rectX - buttonWidth / 2,
                     buttonY - buttonHeight / 2,
                     buttonWidth,
                     buttonHeight,
@@ -235,64 +234,6 @@ export default class LoginScene extends Phaser.Scene {
                         loginButton.setInteractive();
                     }
                 }
-            });
-
-        // Guest Login Button
-        const guestButtonBg = this.add.graphics();
-        guestButtonBg.fillStyle(0x66bb6a, 1);
-        guestButtonBg.fillRoundedRect(
-            rectX + buttonSpacing / 2,
-            buttonY - buttonHeight / 2,
-            buttonWidth,
-            buttonHeight,
-            cornerRadius
-        );
-
-        const guestButton = this.add.text(rectX + buttonSpacing / 2 + buttonWidth / 2, buttonY, 'Gost', {
-            fontFamily: 'Arial',
-            fontSize: '24px',
-            color: '#ffffff'
-        })
-            .setOrigin(0.5)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerover', () => {
-                guestButtonBg.clear();
-                guestButtonBg.fillStyle(0x43a047, 1);
-                guestButtonBg.fillRoundedRect(
-                    rectX + buttonSpacing / 2,
-                    buttonY - buttonHeight / 2,
-                    buttonWidth,
-                    buttonHeight,
-                    cornerRadius
-                );
-            })
-            .on('pointerout', () => {
-                guestButtonBg.clear();
-                guestButtonBg.fillStyle(0x66bb6a, 1);
-                guestButtonBg.fillRoundedRect(
-                    rectX + buttonSpacing / 2,
-                    buttonY - buttonHeight / 2,
-                    buttonWidth,
-                    buttonHeight,
-                    cornerRadius
-                );
-            })
-            .on('pointerdown', () => {
-                // Guest login - no database check needed
-                const pfps = ['avatar1','avatar2','avatar3','avatar4','avatar5','avatar6','avatar7','avatar8','avatar9','avatar10','avatar11'];
-                const randomPfp = pfps[Math.floor(Math.random() * pfps.length)];
-                
-                localStorage.setItem('username', 'Guest');
-                localStorage.setItem('userData', JSON.stringify({
-                    username: 'Guest',
-                    displayImage: randomPfp
-                }));
-                
-                username.remove();
-                password.remove();
-                loadingText.setVisible(false);
-
-                this.scene.start('LabScene');
             });
 
         this.makeApiRequest = async (url, options = {}) => {
