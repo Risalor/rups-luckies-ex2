@@ -1,0 +1,1089 @@
+{
+  "words": [
+    {
+      "image": "fish.jpg",
+      "eng_word": "fish",
+      "slo_word": "riba"
+    },
+    {
+      "image": "chimpanzee.jpg",
+      "eng_word": "chimpanzee",
+      "slo_word": "šimpanz"
+    },
+    {
+      "image": "snake.jpg",
+      "eng_word": "snake",
+      "slo_word": "kača"
+    },
+    {
+      "image": "rat.jpg",
+      "eng_word": "rat",
+      "slo_word": "podgana"
+    },
+    {
+      "image": "insect.jpg",
+      "eng_word": "insect",
+      "slo_word": "žuželka"
+    },
+    {
+      "image": "sheep.jpg",
+      "eng_word": "sheep",
+      "slo_word": "ovca"
+    },
+    {
+      "image": "hamster.jpg",
+      "eng_word": "hamster",
+      "slo_word": "hrček"
+    },
+    {
+      "image": "pig.jpg",
+      "eng_word": "pig",
+      "slo_word": "svinja"
+    },
+    {
+      "image": "bird.jpg",
+      "eng_word": "bird",
+      "slo_word": "ptica"
+    },
+    {
+      "image": "lobster.jpg",
+      "eng_word": "lobster",
+      "slo_word": "jastog"
+    },
+    {
+      "image": "squirrel.jpg",
+      "eng_word": "squirrel",
+      "slo_word": "veverica"
+    },
+    {
+      "image": "mouse.jpg",
+      "eng_word": "mouse",
+      "slo_word": "miš"
+    },
+    {
+      "image": "crocodile.jpg",
+      "eng_word": "crocodile",
+      "slo_word": "krokodil"
+    },
+    {
+      "image": "gorilla.jpg",
+      "eng_word": "gorilla",
+      "slo_word": "gorila"
+    },
+    {
+      "image": "polar-bear.jpg",
+      "eng_word": "polar-bear",
+      "slo_word": "polarni medved"
+    },
+    {
+      "image": "shark.jpg",
+      "eng_word": "shark",
+      "slo_word": "morski pes"
+    },
+    {
+      "image": "tuna.jpg",
+      "eng_word": "tuna",
+      "slo_word": "tuna"
+    },
+    {
+      "image": "salmon.jpg",
+      "eng_word": "salmon",
+      "slo_word": "losos"
+    },
+    {
+      "image": "shellfish.jpg",
+      "eng_word": "shellfish",
+      "slo_word": "školjke"
+    },
+    {
+      "image": "fly.jpg",
+      "eng_word": "fly",
+      "slo_word": "muha"
+    },
+    {
+      "image": "ladybug.jpg",
+      "eng_word": "ladybug",
+      "slo_word": "pikapolonica"
+    },
+    {
+      "image": "beetle.jpg",
+      "eng_word": "beetle",
+      "slo_word": "hrošč"
+    },
+    {
+      "image": "cricket.jpg",
+      "eng_word": "cricket",
+      "slo_word": "cvrček"
+    },
+    {
+      "image": "eagle.jpg",
+      "eng_word": "eagle",
+      "slo_word": "orel"
+    },
+    {
+      "image": "chicken.jpg",
+      "eng_word": "chicken",
+      "slo_word": "kokoš"
+    },
+    {
+      "image": "firefly.jpg",
+      "eng_word": "firefly",
+      "slo_word": "kresnica"
+    },
+    {
+      "image": "cheesecake.jpg",
+      "eng_word": "cheesecake",
+      "slo_word": "skutna torta"
+    },
+    {
+      "image": "pasta.jpg",
+      "eng_word": "pasta",
+      "slo_word": "testenine"
+    },
+    {
+      "image": "salad.jpg",
+      "eng_word": "salad",
+      "slo_word": "solata"
+    },
+    {
+      "image": "croissant.jpg",
+      "eng_word": "croissant",
+      "slo_word": "rogljiček"
+    },
+    {
+      "image": "cupcake.jpg",
+      "eng_word": "cupcake",
+      "slo_word": "tortica"
+    },
+    {
+      "image": "pancake.jpg",
+      "eng_word": "pancake",
+      "slo_word": "palačinka"
+    },
+    {
+      "image": "burger.jpg",
+      "eng_word": "burger",
+      "slo_word": "hamburger"
+    },
+    {
+      "image": "popcorn.jpg",
+      "eng_word": "popcorn",
+      "slo_word": "kokice"
+    },
+    {
+      "image": "chocolate.jpg",
+      "eng_word": "chocolate",
+      "slo_word": "čokolada"
+    },
+    {
+      "image": "cocoa.jpg",
+      "eng_word": "cocoa",
+      "slo_word": "kakav"
+    },
+    {
+      "image": "mineral-water.jpg",
+      "eng_word": "mineral water",
+      "slo_word": "mineralna voda"
+    },
+    {
+      "image": "juice.jpg",
+      "eng_word": "juice",
+      "slo_word": "sok"
+    },
+    {
+      "image": "espresso.jpg",
+      "eng_word": "espresso",
+      "slo_word": "espresso"
+    },
+    {
+      "image": "eggnog.jpg",
+      "eng_word": "eggnog",
+      "slo_word": "jajčni liker"
+    },
+    {
+      "image": "coffee.jpg",
+      "eng_word": "coffee",
+      "slo_word": "kava"
+    },
+    {
+      "image": "tea.jpg",
+      "eng_word": "tea",
+      "slo_word": "čaj"
+    },
+    {
+      "image": "fig.jpg",
+      "eng_word": "fig",
+      "slo_word": "figa"
+    },
+    {
+      "image": "grapefruit.jpg",
+      "eng_word": "grapefruit",
+      "slo_word": "grenivka"
+    },
+    {
+      "image": "mandarin.jpg",
+      "eng_word": "mandarin",
+      "slo_word": "mandarina"
+    },
+    {
+      "image": "nectarine.jpg",
+      "eng_word": "nectarine",
+      "slo_word": "nektarina"
+    },
+    {
+      "image": "blueberry.jpg",
+      "eng_word": "blueberry",
+      "slo_word": "borovnica"
+    },
+    {
+      "image": "mango.jpg",
+      "eng_word": "mango",
+      "slo_word": "mango"
+    },
+    {
+      "image": "pear.jpg",
+      "eng_word": "pear",
+      "slo_word": "hruška"
+    },
+    {
+      "image": "peach.jpg",
+      "eng_word": "peach",
+      "slo_word": "breskev"
+    },
+    {
+      "image": "coconut.jpg",
+      "eng_word": "coconut",
+      "slo_word": "kokos"
+    },
+    {
+      "image": "cherry.jpg",
+      "eng_word": "cherry",
+      "slo_word": "češnja"
+    },
+    {
+      "image": "apricot.jpg",
+      "eng_word": "apricot",
+      "slo_word": "marelica"
+    },
+    {
+      "image": "olive.jpg",
+      "eng_word": "olive",
+      "slo_word": "oliva"
+    },
+    {
+      "image": "grapes.jpg",
+      "eng_word": "grapes",
+      "slo_word": "grozdje"
+    },
+    {
+      "image": "carrot.jpg",
+      "eng_word": "carrot",
+      "slo_word": "korenček"
+    },
+    {
+      "image": "tomato.jpg",
+      "eng_word": "tomato",
+      "slo_word": "paradižnik"
+    },
+    {
+      "image": "potato.jpg",
+      "eng_word": "potato",
+      "slo_word": "krompir"
+    },
+    {
+      "image": "cabbage.jpg",
+      "eng_word": "cabbage",
+      "slo_word": "zelje"
+    },
+    {
+      "image": "engineer.jpg",
+      "eng_word": "engineer",
+      "slo_word": "inženir"
+    },
+    {
+      "image": "musician.jpg",
+      "eng_word": "musician",
+      "slo_word": "glasbenik"
+    },
+    {
+      "image": "salesman.jpg",
+      "eng_word": "salesman",
+      "slo_word": "prodajalec"
+    },
+    {
+      "image": "teacher.jpg",
+      "eng_word": "teacher",
+      "slo_word": "učitelj"
+    },
+    {
+      "image": "coach.jpg",
+      "eng_word": "coach",
+      "slo_word": "trener"
+    },
+    {
+      "image": "photographer.jpg",
+      "eng_word": "photographer",
+      "slo_word": "fotograf"
+    },
+    {
+      "image": "policeman.jpg",
+      "eng_word": "policeman",
+      "slo_word": "policist"
+    },
+    {
+      "image": "chemist.jpg",
+      "eng_word": "chemist",
+      "slo_word": "kemik"
+    },
+    {
+      "image": "doctor.jpg",
+      "eng_word": "doctor",
+      "slo_word": "zdravnik"
+    },
+    {
+      "image": "farmer.jpg",
+      "eng_word": "farmer",
+      "slo_word": "kmet"
+    },
+    {
+      "image": "accountant.jpg",
+      "eng_word": "accountant",
+      "slo_word": "računovodja"
+    },
+    {
+      "image": "actor.jpg",
+      "eng_word": "actor",
+      "slo_word": "igralec"
+    },
+    {
+      "image": "designer.jpg",
+      "eng_word": "designer",
+      "slo_word": "oblikovalec"
+    },
+    {
+      "image": "bartender.jpg",
+      "eng_word": "bartender",
+      "slo_word": "natakar"
+    },
+    {
+      "image": "heart.jpg",
+      "eng_word": "heart",
+      "slo_word": "srce"
+    },
+    {
+      "image": "chin.jpg",
+      "eng_word": "chin",
+      "slo_word": "brada"
+    },
+    {
+      "image": "brain.jpg",
+      "eng_word": "brain",
+      "slo_word": "možgani"
+    },
+    {
+      "image": "skin.jpg",
+      "eng_word": "skin",
+      "slo_word": "koža"
+    },
+    {
+      "image": "stomach.jpg",
+      "eng_word": "stomach",
+      "slo_word": "trebuh"
+    },
+    {
+      "image": "temple.jpg",
+      "eng_word": "temple",
+      "slo_word": "časnica"
+    },
+    {
+      "image": "lung.jpg",
+      "eng_word": "lung",
+      "slo_word": "pljuča"
+    },
+    {
+      "image": "cheek.jpg",
+      "eng_word": "cheek",
+      "slo_word": "lice"
+    },
+    {
+      "image": "eye.jpg",
+      "eng_word": "eye",
+      "slo_word": "oko"
+    },
+    {
+      "image": "forearm.jpg",
+      "eng_word": "forearm",
+      "slo_word": "podlaket"
+    },
+    {
+      "image": "ankle.jpg",
+      "eng_word": "ankle",
+      "slo_word": "gleženj"
+    },
+    {
+      "image": "kidney.jpg",
+      "eng_word": "kidney",
+      "slo_word": "ledvica"
+    },
+    {
+      "image": "eyelash.jpg",
+      "eng_word": "eyelash",
+      "slo_word": "trepalnica"
+    },
+    {
+      "image": "liver.jpg",
+      "eng_word": "liver",
+      "slo_word": "jetra"
+    },
+    {
+      "image": "head.jpg",
+      "eng_word": "head",
+      "slo_word": "glava"
+    },
+    {
+      "image": "eyebrow.jpg",
+      "eng_word": "eyebrow",
+      "slo_word": "obrvi"
+    },
+    {
+      "image": "hair.jpg",
+      "eng_word": "hair",
+      "slo_word": "lasje"
+    },
+    {
+      "image": "desk.jpg",
+      "eng_word": "desk",
+      "slo_word": "miza"
+    },
+    {
+      "image": "mirror.jpg",
+      "eng_word": "mirror",
+      "slo_word": "ogledalo"
+    },
+    {
+      "image": "rug.jpg",
+      "eng_word": "rug",
+      "slo_word": "preproga"
+    },
+    {
+      "image": "table.jpg",
+      "eng_word": "table",
+      "slo_word": "miza"
+    },
+    {
+      "image": "armchair.jpg",
+      "eng_word": "armchair",
+      "slo_word": "naslanjač"
+    },
+    {
+      "image": "cabinet.jpg",
+      "eng_word": "cabinet",
+      "slo_word": "omara"
+    },
+    {
+      "image": "toaster.jpg",
+      "eng_word": "toaster",
+      "slo_word": "opekač"
+    },
+    {
+      "image": "coffee-maker.jpg",
+      "eng_word": "coffee-maker",
+      "slo_word": "kavni aparat"
+    },
+    {
+      "image": "fridge.jpg",
+      "eng_word": "fridge",
+      "slo_word": "hladilnik"
+    },
+    {
+      "image": "dishwasher.jpg",
+      "eng_word": "dishwasher",
+      "slo_word": "pomivalni stroj"
+    },
+    {
+      "image": "espresso-machine.jpg",
+      "eng_word": "espresso-machine",
+      "slo_word": "aparat za espresso"
+    },
+    {
+      "image": "food-processor.jpg",
+      "eng_word": "food processor",
+      "slo_word": "kuhinjski robot"
+    },
+    {
+      "image": "stove.jpg",
+      "eng_word": "stove",
+      "slo_word": "štedilnik"
+    },
+    {
+      "image": "washing-machine.jpg",
+      "eng_word": "washing machine",
+      "slo_word": "pralni stroj"
+    },
+    {
+      "image": "blender.jpg",
+      "eng_word": "blender",
+      "slo_word": "mešalnik"
+    },
+    {
+      "image": "jug.jpg",
+      "eng_word": "jug",
+      "slo_word": "vrč"
+    },
+    {
+      "image": "jar.jpg",
+      "eng_word": "jar",
+      "slo_word": "kozarec"
+    },
+    {
+      "image": "spatula.jpg",
+      "eng_word": "spatula",
+      "slo_word": "lopatica"
+    },
+    {
+      "image": "plate.jpg",
+      "eng_word": "plate",
+      "slo_word": "tanjir"
+    },
+    {
+      "image": "bowl.jpg",
+      "eng_word": "bowl",
+      "slo_word": "skleda"
+    },
+    {
+      "image": "fork.jpg",
+      "eng_word": "fork",
+      "slo_word": "vilica"
+    },
+    {
+      "image": "dish.jpg",
+      "eng_word": "dish",
+      "slo_word": "jed"
+    },
+    {
+      "image": "bottle.jpg",
+      "eng_word": "bottle",
+      "slo_word": "steklenica"
+    },
+    {
+      "image": "tray.jpg",
+      "eng_word": "tray",
+      "slo_word": "pladenj"
+    },
+    {
+      "image": "roof.jpg",
+      "eng_word": "roof",
+      "slo_word": "streha"
+    },
+    {
+      "image": "window.jpg",
+      "eng_word": "window",
+      "slo_word": "okno"
+    },
+    {
+      "image": "basement.jpg",
+      "eng_word": "basement",
+      "slo_word": "klet"
+    },
+    {
+      "image": "fireplace.jpg",
+      "eng_word": "fireplace",
+      "slo_word": "kamin"
+    },
+    {
+      "image": "walkway.jpg",
+      "eng_word": "walkway",
+      "slo_word": "pešpot"
+    },
+    {
+      "image": "front-door.jpg",
+      "eng_word": "front door",
+      "slo_word": "glavna vrata"
+    },
+    {
+      "image": "corridor.jpg",
+      "eng_word": "corridor",
+      "slo_word": "hodnik"
+    },
+    {
+      "image": "porch.jpg",
+      "eng_word": "porch",
+      "slo_word": "veranda"
+    },
+    {
+      "image": "wall.jpg",
+      "eng_word": "wall",
+      "slo_word": "stena"
+    },
+    {
+      "image": "step.jpg",
+      "eng_word": "step",
+      "slo_word": "stopnica"
+    },
+    {
+      "image": "hallway.jpg",
+      "eng_word": "hallway",
+      "slo_word": "hodnik"
+    },
+    {
+      "image": "gutter.jpg",
+      "eng_word": "gutter",
+      "slo_word": "žleb"
+    },
+    {
+      "image": "abbey.jpg",
+      "eng_word": "abbey",
+      "slo_word": "opatija"
+    },
+    {
+      "image": "garage.jpg",
+      "eng_word": "garage",
+      "slo_word": "garaža"
+    },
+    {
+      "image": "hat.jpg",
+      "eng_word": "hat",
+      "slo_word": "klobuk"
+    },
+    {
+      "image": "raincoat.jpg",
+      "eng_word": "raincoat",
+      "slo_word": "dežni plašč"
+    },
+    {
+      "image": "pants.jpg",
+      "eng_word": "pants",
+      "slo_word": "hlače"
+    },
+    {
+      "image": "skirt.jpg",
+      "eng_word": "skirt",
+      "slo_word": "krilo"
+    },
+    {
+      "image": "bathing-suit.jpg",
+      "eng_word": "bathing suit",
+      "slo_word": "kopalke"
+    },
+    {
+      "image": "cardigan.jpg",
+      "eng_word": "cardigan",
+      "slo_word": "jopa"
+    },
+    {
+      "image": "sweater.jpg",
+      "eng_word": "sweater",
+      "slo_word": "pulover"
+    },
+    {
+      "image": "dress.jpg",
+      "eng_word": "dress",
+      "slo_word": "obleka"
+    },
+    {
+      "image": "vest.jpg",
+      "eng_word": "vest",
+      "slo_word": "brezrokavnik"
+    },
+    {
+      "image": "jeans.jpg",
+      "eng_word": "jeans",
+      "slo_word": "traper hlače"
+    },
+    {
+      "image": "bikini.jpg",
+      "eng_word": "bikini",
+      "slo_word": "bikini"
+    },
+    {
+      "image": "shorts.jpg",
+      "eng_word": "shorts",
+      "slo_word": "kratke hlače"
+    },
+    {
+      "image": "t-shirt.jpg",
+      "eng_word": "t-shirt",
+      "slo_word": "majica"
+    },
+    {
+      "image": "shirt.jpg",
+      "eng_word": "shirt",
+      "slo_word": "srajca"
+    },
+    {
+      "image": "blouse.jpg",
+      "eng_word": "blouse",
+      "slo_word": "bluza"
+    },
+    {
+      "image": "apron.jpg",
+      "eng_word": "apron",
+      "slo_word": "predpasnik"
+    },
+    {
+      "image": "jacket.jpg",
+      "eng_word": "jacket",
+      "slo_word": "jakna"
+    },
+    {
+      "image": "basketball.jpg",
+      "eng_word": "basketball",
+      "slo_word": "košarka"
+    },
+    {
+      "image": "skiing.jpg",
+      "eng_word": "skiing",
+      "slo_word": "smučanje"
+    },
+    {
+      "image": "field-hockey.jpg",
+      "eng_word": "field hockey",
+      "slo_word": "hokej na travi"
+    },
+    {
+      "image": "snowboarding.jpg",
+      "eng_word": "snowboarding",
+      "slo_word": "deskanje na snegu"
+    },
+    {
+      "image": "scuba-diving.jpg",
+      "eng_word": "scuba-diving",
+      "slo_word": "potapljanje"
+    },
+    {
+      "image": "windsurfing.jpg",
+      "eng_word": "windsurfing",
+      "slo_word": "deskanje z vetrom"
+    },
+    {
+      "image": "skydiving.jpg",
+      "eng_word": "skydiving",
+      "slo_word": "padalstvo"
+    },
+    {
+      "image": "soccer.jpg",
+      "eng_word": "soccer",
+      "slo_word": "nogomet"
+    },
+    {
+      "image": "ice-skating.jpg",
+      "eng_word": "ice skating",
+      "slo_word": "drsanje"
+    },
+    {
+      "image": "tree.jpg",
+      "eng_word": "tree",
+      "slo_word": "drevo"
+    },
+    {
+      "image": "flower.jpg",
+      "eng_word": "flower",
+      "slo_word": "cvet"
+    },
+    {
+      "image": "cactus.jpg",
+      "eng_word": "cactus",
+      "slo_word": "kaktus"
+    },
+    {
+      "image": "woodland.jpg",
+      "eng_word": "woodland",
+      "slo_word": "gozd"
+    },
+    {
+      "image": "cloud.jpg",
+      "eng_word": "cloud",
+      "slo_word": "oblak"
+    },
+    {
+      "image": "cave.jpg",
+      "eng_word": "cave",
+      "slo_word": "jama"
+    },
+    {
+      "image": "tornado.jpg",
+      "eng_word": "tornado",
+      "slo_word": "tornado"
+    },
+    {
+      "image": "coast.jpg",
+      "eng_word": "coast",
+      "slo_word": "obala"
+    },
+    {
+      "image": "meadow.jpg",
+      "eng_word": "meadow",
+      "slo_word": "travnik"
+    },
+    {
+      "image": "canyon.jpg",
+      "eng_word": "canyon",
+      "slo_word": "soteska"
+    },
+    {
+      "image": "cliff.jpg",
+      "eng_word": "cliff",
+      "slo_word": "pečina"
+    },
+    {
+      "image": "soil.jpg",
+      "eng_word": "soil",
+      "slo_word": "tla"
+    },
+    {
+      "image": "bicycle.jpg",
+      "eng_word": "bicycle",
+      "slo_word": "kolo"
+    },
+    {
+      "image": "bus.jpg",
+      "eng_word": "bus",
+      "slo_word": "avtobus"
+    },
+    {
+      "image": "skateboard.jpg",
+      "eng_word": "skateboard",
+      "slo_word": "rolka"
+    },
+    {
+      "image": "car.jpg",
+      "eng_word": "car",
+      "slo_word": "avto"
+    },
+    {
+      "image": "yacht.jpg",
+      "eng_word": "yacht",
+      "slo_word": "jahta"
+    },
+    {
+      "image": "cruise.jpg",
+      "eng_word": "cruise",
+      "slo_word": "križarjenje"
+    },
+    {
+      "image": "street.jpg",
+      "eng_word": "street",
+      "slo_word": "ulica"
+    },
+    {
+      "image": "alley.jpg",
+      "eng_word": "alley",
+      "slo_word": "ulička"
+    },
+    {
+      "image": "nightclub.jpg",
+      "eng_word": "nightclub",
+      "slo_word": "nočni klub"
+    },
+    {
+      "image": "city-hall.jpg",
+      "eng_word": "city-hall",
+      "slo_word": "mestna hiša"
+    },
+    {
+      "image": "crosswalk.jpg",
+      "eng_word": "crosswalk",
+      "slo_word": "prehod za pešce"
+    },
+    {
+      "image": "airport.jpg",
+      "eng_word": "airport",
+      "slo_word": "letališče"
+    },
+    {
+      "image": "park.jpg",
+      "eng_word": "park",
+      "slo_word": "park"
+    },
+    {
+      "image": "square.jpg",
+      "eng_word": "square",
+      "slo_word": "trg"
+    },
+    {
+      "image": "stadium.jpg",
+      "eng_word": "stadium",
+      "slo_word": "stadion"
+    },
+    {
+      "image": "highway.jpg",
+      "eng_word": "highway",
+      "slo_word": "avtocesta"
+    },
+    {
+      "image": "train-station.jpg",
+      "eng_word": "train station",
+      "slo_word": "železniška postaja"
+    },
+    {
+      "image": "church.jpg",
+      "eng_word": "church",
+      "slo_word": "cerkev"
+    },
+    {
+      "image": "bar.jpg",
+      "eng_word": "bar",
+      "slo_word": "bar"
+    },
+    {
+      "image": "avenue.jpg",
+      "eng_word": "avenue",
+      "slo_word": "avenija"
+    },
+    {
+      "image": "road.jpg",
+      "eng_word": "road",
+      "slo_word": "cesta"
+    },
+    {
+      "image": "road-sign.jpg",
+      "eng_word": "road sign",
+      "slo_word": "prometni znak"
+    },
+    {
+      "image": "supermarket.jpg",
+      "eng_word": "supermarket",
+      "slo_word": "supermarket"
+    },
+    {
+      "image": "mosque.jpg",
+      "eng_word": "mosque",
+      "slo_word": "mošeja"
+    },
+    {
+      "image": "boulevard.jpg",
+      "eng_word": "boulevard",
+      "slo_word": "bulvar"
+    },
+    {
+      "image": "clubbing.jpg",
+      "eng_word": "clubbing",
+      "slo_word": "zabava v nočnem klubu"
+    },
+    {
+      "image": "hiking.jpg",
+      "eng_word": "hiking",
+      "slo_word": "pešačenje"
+    },
+    {
+      "image": "gardener.jpg",
+      "eng_word": "gardener",
+      "slo_word": "vrtnar"
+    },
+    {
+      "image": "circle.jpg",
+      "eng_word": "circle",
+      "slo_word": "krog"
+    },
+    {
+      "image": "cross.jpg",
+      "eng_word": "cross",
+      "slo_word": "križ"
+    },
+    {
+      "image": "excitement.jpg",
+      "eng_word": "excitement",
+      "slo_word": "vznemirjenje"
+    },
+    {
+      "image": "worry.jpg",
+      "eng_word": "worry",
+      "slo_word": "skrb"
+    },
+    {
+      "image": "anger.jpg",
+      "eng_word": "anger",
+      "slo_word": "jeza"
+    },
+    {
+      "image": "hate.jpg",
+      "eng_word": "hate",
+      "slo_word": "sovraštvo"
+    },
+    {
+      "image": "violin.jpg",
+      "eng_word": "violin",
+      "slo_word": "violina"
+    },
+    {
+      "image": "guitar.jpg",
+      "eng_word": "guitar",
+      "slo_word": "kitara"
+    },
+    {
+      "image": "piano.jpg",
+      "eng_word": "piano",
+      "slo_word": "klavir"
+    },
+    {
+      "image": "soap.jpg",
+      "eng_word": "soap",
+      "slo_word": "milo"
+    },
+    {
+      "image": "comb.jpg",
+      "eng_word": "comb",
+      "slo_word": "glavnik"
+    },
+    {
+      "image": "perfume.jpg",
+      "eng_word": "perfume",
+      "slo_word": "parfum"
+    },
+    {
+      "image": "shower.jpg",
+      "eng_word": "shower",
+      "slo_word": "prha"
+    },
+    {
+      "image": "towel.jpg",
+      "eng_word": "towel",
+      "slo_word": "brisača"
+    },
+    {
+      "image": "exhibit.jpg",
+      "eng_word": "exhibit",
+      "slo_word": "razstava"
+    },
+    {
+      "image": "drawing.jpg",
+      "eng_word": "drawing",
+      "slo_word": "risba"
+    },
+    {
+      "image": "collage.jpg",
+      "eng_word": "collage",
+      "slo_word": "koláž"
+    },
+    {
+      "image": "trick.jpg",
+      "eng_word": "trick",
+      "slo_word": "trik"
+    },
+    {
+      "image": "graphic-design.jpg",
+      "eng_word": "graphic design",
+      "slo_word": "grafično oblikovanje"
+    },
+    {
+      "image": "genre.jpg",
+      "eng_word": "genre",
+      "slo_word": "žanr"
+    },
+    {
+      "image": "dancing.jpg",
+      "eng_word": "dancing",
+      "slo_word": "ples"
+    },
+    {
+      "image": "architecture.jpg",
+      "eng_word": "architecture",
+      "slo_word": "arhitektura"
+    },
+    {
+      "image": "graffiti.jpg",
+      "eng_word": "graffiti",
+      "slo_word": "grafiti"
+    }
+  ]
+}
