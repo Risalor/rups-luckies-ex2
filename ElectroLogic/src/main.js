@@ -12,6 +12,7 @@ import ScoreboardScene from './scenes/scoreboardScene';
 import WorkspaceScene from './scenes/workspaceScene';
 import WorkspaceSceneLogicGates from './scenes/workspaceSceneLogicGates';
 import ProfileScene from './scenes/ProfileScene'
+import WebEnglishTaleScene from './scenes/webEnglishTaleScene';
 
 const config = {
   type: Phaser.AUTO,            
@@ -30,7 +31,8 @@ const config = {
     TestScene,
     LoginScene,
     ScoreboardScene,
-    ProfileScene
+    ProfileScene,
+    WebEnglishTaleScene
   ],
   physics: {
     default: 'arcade',           

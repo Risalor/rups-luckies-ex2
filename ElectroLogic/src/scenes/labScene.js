@@ -339,6 +339,34 @@ export default class LabScene extends Phaser.Scene {
           });
     }
 
+    // WebEnglishTale button (only if logged in)
+    if (username && username !== 'Gost') {
+      const weButtonBg = this.add.graphics();
+      weButtonBg.fillStyle(0xe74c3c, 1);
+      weButtonBg.fillRoundedRect(width - buttonWidth - rightMargin, topMargin + (buttonHeight + 20) * 2, buttonWidth, buttonHeight, cornerRadius);
+
+      const weButton = this.add.text(width - buttonWidth / 2 - rightMargin, topMargin + (buttonHeight + 20) * 2 + buttonHeight / 2, '📚 English Tale', {
+          fontFamily: 'Arial',
+          fontSize: '18px',
+          color: '#ffffff'
+      })
+          .setOrigin(0.5)
+          .setInteractive({ useHandCursor: true })
+          .on('pointerover', () => {
+              weButtonBg.clear();
+              weButtonBg.fillStyle(0xc0392b, 1);
+              weButtonBg.fillRoundedRect(width - buttonWidth - rightMargin, topMargin + (buttonHeight + 20) * 2, buttonWidth, buttonHeight, cornerRadius);
+          })
+          .on('pointerout', () => {
+              weButtonBg.clear();
+              weButtonBg.fillStyle(0xe74c3c, 1);
+              weButtonBg.fillRoundedRect(width - buttonWidth - rightMargin, topMargin + (buttonHeight + 20) * 2, buttonWidth, buttonHeight, cornerRadius);
+          })
+          .on('pointerdown', () => {
+              this.scene.start('WebEnglishTaleScene');
+          });
+    }
+
     // Debug info (optional)
     console.log(`Logged in as: ${username}`);
     console.log(`Profile picture: ${profilePic}`);

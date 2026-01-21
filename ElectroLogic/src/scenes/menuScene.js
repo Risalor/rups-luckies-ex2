@@ -237,6 +237,56 @@ export default class MenuScene extends Phaser.Scene {
                 if (this.isSwitchOn) this.scene.start('LoginScene');
             });
 
+        // WebEnglishTale button
+        const webButtonWidth = 200;
+        const webButtonHeight = 50;
+        const webButtonX = rectX + 200;
+        const webButtonY = rectY + 100;
+
+        const webButtonBackground = this.add.graphics();
+        webButtonBackground.fillStyle(0x9b59b6, 1); // purple
+        webButtonBackground.fillRoundedRect(
+            webButtonX - webButtonWidth / 2,
+            webButtonY - webButtonHeight / 2,
+            webButtonWidth,
+            webButtonHeight,
+            cornerRadius
+        );
+        webButtonBackground.setDepth(-1);
+
+        this.webEnglishButton = this.add.text(webButtonX, webButtonY, '📚 English Tale', {
+            fontFamily: 'Arial',
+            fontSize: '20px',
+            color: '#ffffff',
+        })
+            .setOrigin(0.5)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerover', () => {
+                webButtonBackground.clear();
+                webButtonBackground.fillStyle(0x8e44ad, 1);
+                webButtonBackground.fillRoundedRect(
+                    webButtonX - webButtonWidth / 2,
+                    webButtonY - webButtonHeight / 2,
+                    webButtonWidth,
+                    webButtonHeight,
+                    cornerRadius
+                );
+            })
+            .on('pointerout', () => {
+                webButtonBackground.clear();
+                webButtonBackground.fillStyle(0x9b59b6, 1);
+                webButtonBackground.fillRoundedRect(
+                    webButtonX - webButtonWidth / 2,
+                    webButtonY - webButtonHeight / 2,
+                    webButtonWidth,
+                    webButtonHeight,
+                    cornerRadius
+                );
+            })
+            .on('pointerdown', () => {
+                this.scene.start('WebEnglishTaleScene');
+            });
+
         console.log(`${localStorage.getItem('username')}`);
 
         this.titleTween = this.tweens.add({
